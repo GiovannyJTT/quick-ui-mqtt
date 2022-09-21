@@ -63,3 +63,39 @@ npm install     # install all nodejs packages needed for this project (in node_m
 npm run dev     # compile and run a development version
 npm run build   # build an optimized website (html + javscript + images) in dist/ folder
 ```
+
+## Testing with mosquitto local broker
+
+### Enable mosquitto 1.4.10 to use websockets
+
+* Follow instructions at [link](https://gist.github.com/smoofit/dafa493aec8d41ea057370dbfde3f3fc)
+* Summary:
+    * Download
+        ```bash
+        cd  ~/Downloads
+        wget http://mosquitto.org/files/source/mosquitto-1.4.10.tar.gz
+        tar zxvf mosquitto-1.4.10.tar.gz
+        cd mosquitto-1.4.10/
+        sudo nano config.mk
+        ```
+    * Edit `config.mk`
+        * Add `WITH_WEBSOCKETS:=yes`
+    * Compile and install
+        ```bash
+        make
+        sudo make install
+        cp mosquitto.conf /etc/mosquitto/
+        ```
+    * Configure ports
+        ```bash
+        sudo nano /etc/mosquitto/mosquitto.conf
+
+        # add this in section "Default Listener" (ctrl + w to search)
+
+        port 1883
+        listener 9001
+        protocol websockets
+        ```
+    * Add user mosquitto
+        * `sudo adduser mosquitto`
+    * Reboot computer
