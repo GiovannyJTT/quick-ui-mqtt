@@ -6,6 +6,8 @@ The main purpose of this project is to provide a simple boilerplate for an `html
 
 ## ui_setup.json
 
+[ui_setup.json](./src/scripts/ui_setup.json)
+
 * Define a the configuration of the mqtt-broker to use (url, port, options)
 * Define a list of items (button-name, mqtt-topic, message, qos)
     * `name` (madatory, string) it will appear into the button
@@ -127,12 +129,12 @@ sudo apt-get install mosquitto-clients
 * Run this app
     * `npm run dev`
     * Since mosquitto local broker is now enabled to use port `9001` for websockets
-        * When our web-app starts it will connect to `mqtt://localhost:9001`
+        * When our web-app starts it can connect to `mqtt://localhost:9001` (configure `ui_setup.json`)
 * You can send messages from a terminal to our web-app using the local broker
-    1. We send a message to broker using the TCP port 1883 (enabled by default)
+    1. We send a message to broker using the TCP port 1883 (enabled by default) by terminal
         ```bash
-        mosquitto_pub -t "/test" -p 1883 -m "new message"
+        mosquitto_pub -h "localhost" -p 1883 -t "/test" -m "new message"
         ```
-    2. The broker finds the nodes that are subscribed to that topic `/test` and transmits the message to them
+    2. The broker finds the nodes that are subscribed to topic `/test` and transmits the message to them
     2. We can see the message is received into our web-app after it got subscribed to the topic
         * Check chrome-console (Ctrl + Shift + I)
