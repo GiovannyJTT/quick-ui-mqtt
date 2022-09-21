@@ -176,5 +176,4 @@ App.prototype.add_items_callbacks_dynamically = function () {
     console.debug("added ui-items callbacks: " + ui.items.length);
 }
 
-// start
-const app = new App();
+export default App

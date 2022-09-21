@@ -19,4 +19,7 @@ window.$ = $;
 /**
  * Finally load our app: buttons behavior, etc.
  */
-import './app'
+import App from './app'
+
+// start
+const app = new App();
