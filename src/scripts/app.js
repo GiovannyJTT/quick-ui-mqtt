@@ -160,7 +160,7 @@ App.prototype.add_items_callbacks_dynamically = function () {
                         );
                     }
                     else {
-                        this.client.subscribe(_item.topic,
+                        this.client.unsubscribe(_item.topic,
                             function (e) {
                                 // un-set flag
                                 _item.subscribed = undefined
