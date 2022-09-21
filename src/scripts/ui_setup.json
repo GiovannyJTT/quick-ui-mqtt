@@ -4,12 +4,13 @@
         "host": "localhost",
         "port": "9001",
         "options": {
-            "client_id": "mqtt_client_01",
-            "clean": true,
+            "clientId": "mqtt_client_01",
             "connectTimeout": 4000,
+            "reconnectPeriod": 1000,
+            "keepalive": 60,
+            "clean": true,
             "username": "tfm",
-            "password": "public",
-            "reconnectPeriod": 1000
+            "password": "public"
         }
     },
     "items": [
