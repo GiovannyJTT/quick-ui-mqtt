@@ -57,7 +57,7 @@ This project uses webpack-5 for building the final js code. Webpack configuratio
 
 ### Compiling quick-ui-mqtt project
 
-#### Compile instructions:
+#### Compile instructions
 
 ```bash
 git clone https://github.com/GiovannyJTT/quick-ui-mqtt.git
@@ -69,9 +69,17 @@ npm run build   # build an optimized website (html + javscript + images) in dist
 
 ## Testing with mosquitto local broker
 
+### Install mosquitto client tools
+
+```bash
+sudo apt-get install mosquitto-clients
+# this installs mosquitto_pub, mosquitto_sub
+```
+
 ### Enable mosquitto 1.4.10 to use websockets
 
 * Follow instructions at [link](https://gist.github.com/smoofit/dafa493aec8d41ea057370dbfde3f3fc)
+* This installs `mosquitto` local broker
 * Summary:
     * Download
         ```bash
@@ -107,4 +115,13 @@ npm run build   # build an optimized website (html + javscript + images) in dist
 
 * Run this app
     * `npm run dev`
-* 
+    * Since mosquitto local broker is now enabled to use port `9001` for websockets
+        * When our web-app starts it will connect to `mqtt://localhost:9001`
+* You can send messages from a terminal to our web-app using the local broker
+    1. We send a message to broker using the TCP port 1883 (enabled by default)
+        ```bash
+        mosquitto_pub -t "/test" -p 1883 -m "new message"
+        ```
+    2. The broker finds the nodes that are subscribed to that topic `/test` and transmits the message to them
+    2. We can see the message is received into our web-app after it got subscribed to the topic
+        * Check chrome-console (Ctrl + Shift + I)
