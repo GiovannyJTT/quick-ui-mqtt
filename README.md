@@ -1,6 +1,6 @@
 # quick-ui-mqtt
 
-The main purpose of this project is to provide a simple boilerplate for an html UI that uses mqtt publish / subscribe on background
+The main purpose of this project is to provide a simple boilerplate for an `html UI` that helps to use `mqtt publish / subscribe` on background
 
 * Use the example of pub / sub buttons and add your own behaviours to the `onClick` events
 
