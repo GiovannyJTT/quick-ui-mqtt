@@ -1,0 +1,53 @@
+{
+    "description": "define a list of items (buttons / text) to be shown into the UI and the url of the mqtt broker",
+    "mqtt_broker": {
+        "host": "localhost",
+        "port": "9001",
+        "options": {
+            "client_id": "mqtt_client_01",
+            "clean": true,
+            "connectTimeout": 4000,
+            "username": "tfm",
+            "password": "public",
+            "reconnectPeriod": 1000
+        }
+    },
+    "items": [
+        {
+            "name": "Increase AC temp",
+            "topic": "/monitor_node/heating/action/",
+            "message": "+1", 
+            "qos": 2
+        },
+        {
+            "name": "Decrease AC temp",
+            "topic": "/monitor_node/heating/action/",
+            "message": "-1",
+            "qos": 2
+        },
+        {
+            "name": "Room temperature",
+            "topic": "/monitor_node/room/temperature",
+            "qos": 2,
+            "description": "Temperature sensor"
+        },
+        {
+            "name": "Start air extractor",
+            "topic": "/monitor_node/room/extractor",
+            "message": "100",
+            "qos": 2
+        },
+        {
+            "name": "Stop air extractor",
+            "topic": "/monitor_node/room/extractor",
+            "message": "0",
+            "qos": 2
+        },
+        {
+            "name": "Room smoke",
+            "topic": "/monitor_node/room/smoke",
+            "qos": 2,
+            "description": "Smoke sensor"
+        }
+    ]
+}
