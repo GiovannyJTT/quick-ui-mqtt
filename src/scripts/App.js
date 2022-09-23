@@ -110,20 +110,42 @@ App.prototype.add_items_dynamically = function (parent_id) {
 
         // add tab
         let _tab_id = "tab" + i;
-        let _tab = '<a id="' + _tab_id + '" class="list-group-item" role="tab"></a>'
+        let _tab = '<a id="' + _tab_id + '" class="list-group-item" role="tab"></a>';
 
         $("#" + parent_id).append(_tab);
 
-        // add button to tab
+        // add row to tab
+        let _row_id = "row" + i;
+        let _row = '<div id="' + _row_id + '" class="row justify-content-md-center"></div>';
+        $("#" + _tab_id).append(_row);
+
+        // add col1 to row
+        let _col1_id = "col" + i + "_1";
+        let _col1 = '<div id="' + _col1_id + '" class="col-md-auto"></div>';
+
+        $("#" + _row_id).append(_col1);
+
+        // add col2 to row
+        let _col2_id = "col" + i + "_2";
+        let _col2 = '<div id="' + _col2_id + '" class="col-md-auto"></div>';
+
+        $("#" + _row_id).append(_col2);
+
+        // add button to col1
         let _button_id = "button" + i;
-        let _button = '<button id="' + _button_id + '" class="btn btn-primary" style="width: 200px">'
+        let _button = '<button id="' + _button_id + '" class="btn btn-primary" style="width: 300px">'
             + _item.name
-            + '</button>&nbsp;';
+            + '</button>';
 
-        $("#" + _tab_id).append(_button);
+        $("#" + _col1_id).append(_button);
 
-        // add text-box to tab
-        let _text_id = ""
+        // add text-box to col2
+        let _text_id = "text" + i;
+        let _text = '<input id="' + _text_id + '" class="form-control text-white bg-light" type="text" style="width: 300px" placeholder="'
+            + _item.topic
+            + '" readonly></input>'
+
+        $("#" + _col2_id).append(_text);
     }
 
     console.debug("added ui-items: " + ui.items.length + " to '" + parent_id + "'");
