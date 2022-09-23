@@ -122,7 +122,26 @@ sudo apt-get install mosquitto-clients
         ```
     * Add user mosquitto
         * `sudo adduser mosquitto`
-    * Reboot computer
+    * Restart mosquitto
+        * `sudo systemctl restart mosquitto.service`
+
+### Enable mosquitto 2 to use websockets
+
+* Mosquitto 2 already has support for websockets
+* You need to add a websocket listener into `/etc/mosquitto/mosquitto.conf`
+    ```bash
+    sudo nano /etc/mosquitto/mosquitto.conf
+
+    # add this at the end of file
+
+    port 1883
+    listener 9001
+    protocol websockets
+    ```
+* Add user mosquitto
+    * `sudo adduser mosquitto`
+* Restart mosquitto
+    * `sudo systemctl restart mosquitto.service`
 
 ### Test with mosquitto local broker
 
