@@ -1,7 +1,7 @@
 {
-    "description": "define a list of items (buttons / text) to be shown into the UI and the url of the mqtt broker",
+    "description": "define mqtt broker details (local IP 192.168.1.X to contact mosquitto), define list of items to be shown into the UI",
     "mqtt_broker": {
-        "host": "localhost",
+        "host": "10.236.44.156",
         "port": "9001",
         "options": {
             "clientId": "mqtt_client_01",
@@ -10,43 +10,43 @@
             "keepalive": 60,
             "clean": true,
             "username": "tfm",
-            "password": "public"
+            "password": "pass"
         }
     },
     "items": [
         {
             "name": "Increase AC temp",
-            "topic": "/monitor_node/heating/action/",
+            "topic": "/converter/set_temperature",
             "message": "+1", 
             "qos": 2
         },
         {
             "name": "Decrease AC temp",
-            "topic": "/monitor_node/heating/action/",
+            "topic": "/converter/set_temperature",
             "message": "-1",
             "qos": 2
         },
         {
             "name": "Room temperature",
-            "topic": "/monitor_node/room/temperature",
+            "topic": "/converter/temperature",
             "qos": 2,
             "description": "Temperature sensor"
         },
         {
             "name": "Start air extractor",
-            "topic": "/monitor_node/room/extractor",
+            "topic": "/converter/set_extractor",
             "message": "100",
             "qos": 2
         },
         {
             "name": "Stop air extractor",
-            "topic": "/monitor_node/room/extractor",
+            "topic": "/converter/set_extractor",
             "message": "0",
             "qos": 2
         },
         {
             "name": "Room smoke",
-            "topic": "/monitor_node/room/smoke",
+            "topic": "/converter/smoke",
             "qos": 2,
             "description": "Smoke sensor"
         }
