@@ -12,7 +12,7 @@ class App {
         // ui
         const _list_id = this.add_list_group("container");
         this.add_items_dynamically(_list_id);
-        this.add_items_callbacks_dynamically();
+        this.add_buttons_callbacks_dynamically();
     }
 }
 
@@ -30,21 +30,21 @@ App.prototype.connect_to_mqtt_broker = function () {
     // on connected event
     this.client.on("connect",
         function (e) {
-            console.warn("mqtt.client: connected: " + this.client.connected);
+            console.warn("mqtt.client: connected: '" + this.client.connected + "' to broker: '" + _url + "'");
         }.bind(this)
     );
 
     // on message received event
     this.client.on("message",
         function (topic, message, packet) {
-           console.debug("mqtt.client: received message: '" + message + "' on '" + topic + "'");
+            console.debug("mqtt.client: received message: '" + message + "' on '" + topic + "'");
         }.bind(this)
     );
 
     // on disconnect event
     this.client.on("disconnect",
         function (e) {
-            console.warn("mqtt.client: disconnected: " + !this.client.connected);
+            console.warn("mqtt.client: disconnected: '" + !this.client.connected + "' from broker: '" + _url + "'");
         }.bind(this)
     );
 }
@@ -67,12 +67,24 @@ App.prototype.add_list_group = function (parent_id) {
     const _list = '<div id="' + _list_id + '" class="list-group" role="tablist"></div>'
     $("#" + parent_id).append(_list);
 
-    console.debug("added " + _list_id + " to " + parent_id);
+    console.debug("added '" + _list_id + "' to '" + parent_id + "'");
     return _list_id;
 }
 
 /**
- * Add bootstrap-buttons dynamically as children of `parent_id`
+ * It adds bootstrap UI elements as children of `parent_id`
+ * 
+ * For each item into `ui_setup.json`, it will create a tab:
+
+ * 1. Every tab will contain `button`, `text-box` and `color`
+ * 2. A subscriber button (ex: `Room temperature`) when clicked will subscribe or unsubscribe from topic
+ *      - When subscribed color will change to `green`
+ *          - When received message will be reflected into text-box
+ *      - When unsubscribed color will change to `red`
+ *          - text-box will cleared
+ * 3. A publisher button (ex: `Increase AC temp`) when clicked will publish to topic
+ *      - When publish succeeded color will blink to `green` for 100 ms
+ *      - When publish failed color will blink to `red` for 100 ms
  */
 App.prototype.add_items_dynamically = function (parent_id) {
 
@@ -103,31 +115,34 @@ App.prototype.add_items_dynamically = function (parent_id) {
         $("#" + parent_id).append(_tab);
 
         // add button to tab
-        let _button_id = "item" + i;
+        let _button_id = "button" + i;
         let _button = '<button id="' + _button_id + '" class="btn btn-primary" style="width: 200px">'
             + _item.name
             + '</button>&nbsp;';
 
         $("#" + _tab_id).append(_button);
+
+        // add text-box to tab
+        let _text_id = ""
     }
 
-    console.debug("added ui-items: " + ui.items.length + " to " + parent_id);
+    console.debug("added ui-items: " + ui.items.length + " to '" + parent_id + "'");
 }
 
 /**
  * Attaches `onClick` callbacks dynamically. These callbacks trigger mqtt publish / subscribe
  * 
- * It assumes all items have 'name' and 'topic' fields
+ * It assumes all items form `ui_setup.json` have `name` and `topic` fields
  * 
  * NOTE: when adding callbacks: if item has "message" will be created a mqtt-publisher, otherwise it will create a mqtt-subscriber
  * NOTE: one click for subscribing and one click for un-subscribing
  */
-App.prototype.add_items_callbacks_dynamically = function () {
+App.prototype.add_buttons_callbacks_dynamically = function () {
 
     for (let i = 0; i < ui.items.length; i++) {
 
         let _item = ui.items[i];
-        let _id = 'item' + i;
+        let _id = 'button' + i;
 
         // it is a publish topic
         if (undefined !== _item.message) {
@@ -135,12 +150,18 @@ App.prototype.add_items_callbacks_dynamically = function () {
                 function (e) {
                     console.debug(_id + " onClick");
 
-                    this.client.publish(_item.topic, _item.message, { qos: _item.qos, retain: false },
-                        function (e) {
-                            console.debug("mqtt.client.published: " + _item.topic + " " + _item.message);
-                        }.bind(this)
-                    );
+                    // prevent attending burst of clicks
+                    if (undefined === _item.processing) {
+                        _item.processing = true;
 
+                        this.client.publish(_item.topic, _item.message, { qos: _item.qos, retain: false },
+                            function (e) {
+                                _item.processing = undefined;
+
+                                console.debug("mqtt.client.published: " + _item.topic + " " + _item.message);
+                            }.bind(this)
+                        );
+                    }
                 }.bind(this)
             );
         }
@@ -150,23 +171,32 @@ App.prototype.add_items_callbacks_dynamically = function () {
                 function (e) {
                     console.debug(_id + " onClick");
 
-                    if (undefined === _item.subscribed) {
-                        this.client.subscribe(_item.topic, { qos: _item.qos, retain: false },
-                            function (e) {
-                                // set flag
-                                _item.subscribed = true;
-                                console.debug("mqtt.client.subscribed: " + _item.topic);
-                            }.bind(this)
-                        );
-                    }
-                    else {
-                        this.client.unsubscribe(_item.topic,
-                            function (e) {
-                                // un-set flag
-                                _item.subscribed = undefined
-                                console.debug("mqtt.client.unsubscribed: " + _item.topic);
-                            }.bind(this)
-                        );
+                    // prevent attending burst of clicks
+                    if (undefined === _item.processing) {
+                        _item.processing = true;
+
+                        if (undefined === _item.subscribed) {
+                            this.client.subscribe(_item.topic, { qos: _item.qos, retain: false },
+                                function (e) {
+                                    // set "sub" flag
+                                    _item.subscribed = true;
+                                    _item.processing = undefined;
+
+                                    console.debug("mqtt.client.subscribed: " + _item.topic);
+                                }.bind(this)
+                            );
+                        }
+                        else {
+                            this.client.unsubscribe(_item.topic,
+                                function (e) {
+                                    // un-set "sub" flag
+                                    _item.subscribed = undefined;
+                                    _item.processing = undefined;
+
+                                    console.debug("mqtt.client.unsubscribed: " + _item.topic);
+                                }.bind(this)
+                            );
+                        }
                     }
                 }.bind(this)
             );
