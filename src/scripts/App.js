@@ -39,6 +39,8 @@ App.prototype.connect_to_mqtt_broker = function () {
     this.client.on("message",
         function (topic, message, packet) {
             console.debug("mqtt.client: received message: '" + message + "' on '" + topic + "'");
+
+            this.on_message_received(topic, message);
         }.bind(this)
     );
 
@@ -148,7 +150,7 @@ App.prototype.add_items_dynamically = function (parent_id) {
 
         // add text-box to col2
         let _text_id = "text" + i;
-        let _text = '<textarea id="' + _text_id + '" class="form-control text-dark bg-light p-2" type="text" style="width: 300px" placeholder="'
+        let _text = '<textarea id="' + _text_id + '" class="form-control text-dark bg-light p-1" type="text" style="width: 300px" placeholder="'
             + _item.topic
             + '" readonly></textarea>'
 
@@ -193,10 +195,8 @@ App.prototype.add_buttons_callbacks_dynamically = function () {
                         this.client.publish(_item.topic, _item.message, { qos: _item.qos, retain: false },
                             function (e) {
                                 $("#" + _id_badge).attr("class", "badge badge-light bg-warning");
-
-                                let _str = "mqtt.client.published: " + _item.topic + " " + _item.message;
-                                $("#" + _id_text).val(_str);
-
+                                $("#" + _id_text).val(_item.message);
+                                
                                 setTimeout( () => { 
                                     $("#" + _id_badge).attr("class", "badge badge-light bg-secondary");
                                 }, 100);
@@ -204,7 +204,8 @@ App.prototype.add_buttons_callbacks_dynamically = function () {
                                 setTimeout(() => {
                                     $("#" + _id_text).val("");                                    
                                 }, 1000);
-
+                                
+                                let _str = "mqtt.client.published: " + _item.topic + " " + _item.message;
                                 console.debug(_str);
 
                                 _item.processing = undefined;
@@ -233,10 +234,8 @@ App.prototype.add_buttons_callbacks_dynamically = function () {
                             this.client.subscribe(_item.topic, { qos: _item.qos, retain: false },
                                 function (e) {
                                     $("#" + _id_badge).attr("class", "badge badge-light bg-success");
-
+                                    
                                     let _str = "mqtt.client.subscribed: " + _item.topic;
-                                    $("#" + _id_text).val(_str);
-
                                     console.debug(_str);
 
                                     // set "sub" flag
@@ -249,10 +248,8 @@ App.prototype.add_buttons_callbacks_dynamically = function () {
                             this.client.unsubscribe(_item.topic,
                                 function (e) {
                                     $("#" + _id_badge).attr("class", "badge badge-light bg-danger");
-
+                                    
                                     let _str = "mqtt.client.unsubscribed: " + _item.topic;
-                                    $("#" + _id_text).val(_str);
-
                                     console.debug(_str);
 
                                     // un-set "sub" flag
@@ -268,6 +265,33 @@ App.prototype.add_buttons_callbacks_dynamically = function () {
     }
 
     console.debug("added ui-items callbacks: " + ui.items.length);
+}
+
+/**
+ * Show received message into the corresponding text-box
+ */
+App.prototype.on_message_received = function (topic_, message_) {
+
+    let _item = undefined;
+    for (let i=0; i < ui.items.length; i++) {
+        if (topic_ == ui.items[i].topic) {
+            _item = ui.items[i];
+            _item.index = i;
+            break;
+        }
+    }
+
+    if (undefined === _item) {
+        console.error("topic not found in ui.items: " + topic_ + ". This should not happen.");
+        return;
+    }
+
+    let _id_text = "text" + _item.index;
+    $("#" + _id_text).val(message_);
+
+    setTimeout(() => {
+        $("#" + _id_text).val("");                                    
+    }, 1000);
 }
 
 export default App
