@@ -1,7 +1,7 @@
 {
     "description": "define mqtt broker details (local IP 192.168.1.X to contact mosquitto), define list of items to be shown into the UI",
     "mqtt_broker": {
-        "host": "10.236.44.156",
+        "host": "localhost",
         "port": "9001",
         "options": {
             "clientId": "mqtt_client_01",

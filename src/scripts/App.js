@@ -148,9 +148,9 @@ App.prototype.add_items_dynamically = function (parent_id) {
 
         // add text-box to col2
         let _text_id = "text" + i;
-        let _text = '<input id="' + _text_id + '" class="form-control text-white bg-light p-4" type="text" style="width: 300px" placeholder="'
+        let _text = '<textarea id="' + _text_id + '" class="form-control text-dark bg-light p-2" type="text" style="width: 300px" placeholder="'
             + _item.topic
-            + '" readonly></input>'
+            + '" readonly></textarea>'
 
         $("#" + _col2_id).append(_text);
     }
@@ -173,6 +173,7 @@ App.prototype.add_buttons_callbacks_dynamically = function () {
         let _item = ui.items[i];
         let _id_button = 'button' + i;
         let _id_badge = "badge" + i;
+        let _id_text = "text" + i;
 
         // it is a publish topic
         if (undefined !== _item.message) {
@@ -194,11 +195,18 @@ App.prototype.add_buttons_callbacks_dynamically = function () {
                                 _item.processing = undefined;
                                 $("#" + _id_badge).attr("class", "badge badge-light bg-warning");
 
-                                setTimeout( function() { 
+                                let _str = "mqtt.client.published: " + _item.topic + " " + _item.message;
+                                $("#" + _id_text).val(_str);
+
+                                setTimeout( () => { 
                                     $("#" + _id_badge).attr("class", "badge badge-light bg-secondary");
                                 }, 100);
+                                
+                                setTimeout(() => {
+                                    $("#" + _id_text).val("");                                    
+                                }, 1000);
 
-                                console.debug("mqtt.client.published: " + _item.topic + " " + _item.message);
+                                console.debug(_str);
                             }.bind(this)
                         );
                     }
@@ -228,7 +236,10 @@ App.prototype.add_buttons_callbacks_dynamically = function () {
                                     _item.processing = undefined;
                                     $("#" + _id_badge).attr("class", "badge badge-light bg-success");
 
-                                    console.debug("mqtt.client.subscribed: " + _item.topic);
+                                    let _str = "mqtt.client.subscribed: " + _item.topic;
+                                    $("#" + _id_text).val(_str);
+
+                                    console.debug(_str);
                                 }.bind(this)
                             );
                         }
@@ -240,7 +251,10 @@ App.prototype.add_buttons_callbacks_dynamically = function () {
                                     _item.processing = undefined;
                                     $("#" + _id_badge).attr("class", "badge badge-light bg-danger");
 
-                                    console.debug("mqtt.client.unsubscribed: " + _item.topic);
+                                    let _str = "mqtt.client.unsubscribed: " + _item.topic;
+                                    $("#" + _id_text).val(_str);
+
+                                    console.debug(_str);
                                 }.bind(this)
                             );
                         }
