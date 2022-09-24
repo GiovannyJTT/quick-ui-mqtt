@@ -150,7 +150,7 @@ App.prototype.add_items_dynamically = function (parent_id) {
 
         // add text-box to col2
         let _text_id = "text" + i;
-        let _text = '<textarea id="' + _text_id + '" class="form-control text-dark bg-light p-1" type="text" style="width: 300px" placeholder="'
+        let _text = '<textarea id="' + _text_id + '" class="form-control text-dark bg-light" type="text" style="width: 300px" placeholder="'
             + _item.topic
             + '" readonly></textarea>'
 
