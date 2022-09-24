@@ -1,3 +1,4 @@
+import { Button } from 'bootstrap';
 import * as mqtt from 'mqtt'
 import ui from './ui_setup.json'
 
@@ -139,9 +140,15 @@ App.prototype.add_items_dynamically = function (parent_id) {
 
         $("#" + _col1_id).append(_button);
 
+        // add badge to button
+        let _badge_id = "badge" + i;
+        let _badge = '&nbsp<span id="' + _badge_id + '" class="badge badge-light bg-secondary">&nbsp</span>&nbsp';
+
+        $("#" + _button_id).append(_badge);
+
         // add text-box to col2
         let _text_id = "text" + i;
-        let _text = '<input id="' + _text_id + '" class="form-control text-white bg-light" type="text" style="width: 300px" placeholder="'
+        let _text = '<input id="' + _text_id + '" class="form-control text-white bg-light p-4" type="text" style="width: 300px" placeholder="'
             + _item.topic
             + '" readonly></input>'
 
@@ -164,13 +171,19 @@ App.prototype.add_buttons_callbacks_dynamically = function () {
     for (let i = 0; i < ui.items.length; i++) {
 
         let _item = ui.items[i];
-        let _id = 'button' + i;
+        let _id_button = 'button' + i;
+        let _id_badge = "badge" + i;
 
         // it is a publish topic
         if (undefined !== _item.message) {
-            $("#" + _id).on("click",
+            $("#" + _id_button).on("click",
                 function (e) {
-                    console.debug(_id + " onClick");
+                    console.debug(_id_button + " onClick");
+
+                    if (!this.client.connected) {
+                        console.error("Not connected to broker");
+                        return;
+                    }
 
                     // prevent attending burst of clicks
                     if (undefined === _item.processing) {
@@ -179,6 +192,11 @@ App.prototype.add_buttons_callbacks_dynamically = function () {
                         this.client.publish(_item.topic, _item.message, { qos: _item.qos, retain: false },
                             function (e) {
                                 _item.processing = undefined;
+                                $("#" + _id_badge).attr("class", "badge badge-light bg-warning");
+
+                                setTimeout( function() { 
+                                    $("#" + _id_badge).attr("class", "badge badge-light bg-secondary");
+                                }, 100);
 
                                 console.debug("mqtt.client.published: " + _item.topic + " " + _item.message);
                             }.bind(this)
@@ -189,9 +207,14 @@ App.prototype.add_buttons_callbacks_dynamically = function () {
         }
         // it is a subscribe topic
         else {
-            $("#" + _id).on("click",
+            $("#" + _id_button).on("click",
                 function (e) {
-                    console.debug(_id + " onClick");
+                    console.debug(_id_button + " onClick");
+
+                    if (!this.client.connected) {
+                        console.error("Not connected to broker");
+                        return;
+                    }
 
                     // prevent attending burst of clicks
                     if (undefined === _item.processing) {
@@ -203,6 +226,7 @@ App.prototype.add_buttons_callbacks_dynamically = function () {
                                     // set "sub" flag
                                     _item.subscribed = true;
                                     _item.processing = undefined;
+                                    $("#" + _id_badge).attr("class", "badge badge-light bg-success");
 
                                     console.debug("mqtt.client.subscribed: " + _item.topic);
                                 }.bind(this)
@@ -214,6 +238,7 @@ App.prototype.add_buttons_callbacks_dynamically = function () {
                                     // un-set "sub" flag
                                     _item.subscribed = undefined;
                                     _item.processing = undefined;
+                                    $("#" + _id_badge).attr("class", "badge badge-light bg-danger");
 
                                     console.debug("mqtt.client.unsubscribed: " + _item.topic);
                                 }.bind(this)
