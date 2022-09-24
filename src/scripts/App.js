@@ -192,7 +192,6 @@ App.prototype.add_buttons_callbacks_dynamically = function () {
 
                         this.client.publish(_item.topic, _item.message, { qos: _item.qos, retain: false },
                             function (e) {
-                                _item.processing = undefined;
                                 $("#" + _id_badge).attr("class", "badge badge-light bg-warning");
 
                                 let _str = "mqtt.client.published: " + _item.topic + " " + _item.message;
@@ -207,6 +206,8 @@ App.prototype.add_buttons_callbacks_dynamically = function () {
                                 }, 1000);
 
                                 console.debug(_str);
+
+                                _item.processing = undefined;
                             }.bind(this)
                         );
                     }
@@ -231,30 +232,32 @@ App.prototype.add_buttons_callbacks_dynamically = function () {
                         if (undefined === _item.subscribed) {
                             this.client.subscribe(_item.topic, { qos: _item.qos, retain: false },
                                 function (e) {
-                                    // set "sub" flag
-                                    _item.subscribed = true;
-                                    _item.processing = undefined;
                                     $("#" + _id_badge).attr("class", "badge badge-light bg-success");
 
                                     let _str = "mqtt.client.subscribed: " + _item.topic;
                                     $("#" + _id_text).val(_str);
 
                                     console.debug(_str);
+
+                                    // set "sub" flag
+                                    _item.subscribed = true;
+                                    _item.processing = undefined;
                                 }.bind(this)
                             );
                         }
                         else {
                             this.client.unsubscribe(_item.topic,
                                 function (e) {
-                                    // un-set "sub" flag
-                                    _item.subscribed = undefined;
-                                    _item.processing = undefined;
                                     $("#" + _id_badge).attr("class", "badge badge-light bg-danger");
 
                                     let _str = "mqtt.client.unsubscribed: " + _item.topic;
                                     $("#" + _id_text).val(_str);
 
                                     console.debug(_str);
+
+                                    // un-set "sub" flag
+                                    _item.subscribed = undefined;
+                                    _item.processing = undefined;
                                 }.bind(this)
                             );
                         }
