@@ -85,6 +85,76 @@ App.prototype.disconnect_from_mqtt_broker = function () {
     this.client = undefined;
 }
 
+App.prototype.on_connected = function () {
+    const _id_text = "text_broker_status";
+    $("#" + _id_text).val("connected");
+    $("#" + _id_text).attr("class", "form-control text-success bg-light");
+}
+
+App.prototype.on_disconnected = function () {
+    const _id_text = "text_broker_status";
+    $("#" + _id_text).val("disconnected");
+    $("#" + _id_text).attr("class", "form-control text-danger bg-light");
+}
+
+App.prototype.on_error = function (e) {
+    const _id_text = "text_broker_status";
+    $("#" + _id_text).val("error: " + JSON.stringify(e));
+}
+
+App.prototype.on_reconnecting = function () {
+    const _id_text = "text_broker_status";
+    $("#" + _id_text).val("reconnecting");
+    $("#" + _id_text).attr("class", "form-control text-warning bg-light");
+
+    if (undefined === this.reconnect_timed) {
+        this.reconect_timed = true;
+
+        setTimeout(() => {
+            if (!this.client.connected) {
+                $("#" + _id_text).val("");
+                $("#" + _id_text).attr("class", "form-control text-dark bg-light");    
+            }
+
+            this.reconect_timed = undefined;
+        }, 800);
+        // less than 1000 defined as reconnectTimeout
+    }
+}
+
+/**
+ * Show received message into the corresponding text-box
+ */
+App.prototype.on_message_received = function (topic_, message_) {
+
+    let _item = undefined;
+    for (let i = 0; i < ui.items.length; i++) {
+        if (topic_ == ui.items[i].topic) {
+            _item = ui.items[i];
+            _item.index = i;
+            break;
+        }
+    }
+
+    if (undefined === _item) {
+        console.error("Topic not found in ui.items: " + topic_ + ". This should not happen.");
+        return;
+    }
+
+    let _id_text = "text" + _item.index;
+    $("#" + _id_text).val(message_);
+
+    if (undefined === this.message_timed) {
+        // set flag
+        this.message_timed = setTimeout(() => {
+            $("#" + _id_text).val("");
+
+            // un-set flag
+            this.message_timed = undefined;
+        }, 1000);
+    }
+}
+
 App.prototype.check_item_fields = function (item_) {
     if (undefined === item_.topic) {
         console.error("item " + i + " has no 'topic': " + JSON.stringify(item_) + ". Aborting");
@@ -352,76 +422,6 @@ App.prototype.add_buttons_callbacks_dynamically = function () {
     }
 
     console.debug("added ui-items callbacks: " + ui.items.length);
-}
-
-App.prototype.on_connected = function () {
-    const _id_text = "text_broker_status";
-    $("#" + _id_text).val("connected");
-    $("#" + _id_text).attr("class", "form-control text-success bg-light");
-}
-
-App.prototype.on_disconnected = function () {
-    const _id_text = "text_broker_status";
-    $("#" + _id_text).val("disconnected");
-    $("#" + _id_text).attr("class", "form-control text-danger bg-light");
-}
-
-App.prototype.on_error = function (e) {
-    const _id_text = "text_broker_status";
-    $("#" + _id_text).val("error: " + JSON.stringify(e));
-}
-
-App.prototype.on_reconnecting = function () {
-    const _id_text = "text_broker_status";
-    $("#" + _id_text).val("reconnecting");
-    $("#" + _id_text).attr("class", "form-control text-warning bg-light");
-
-    if (undefined === this.reconnect_timed) {
-        this.reconect_timed = true;
-
-        setTimeout(() => {
-            if (!this.client.connected) {
-                $("#" + _id_text).val("");
-                $("#" + _id_text).attr("class", "form-control text-dark bg-light");    
-            }
-
-            this.reconect_timed = undefined;
-        }, 800);
-        // less than 1000 defined as reconnectTimeout
-    }
-}
-
-/**
- * Show received message into the corresponding text-box
- */
-App.prototype.on_message_received = function (topic_, message_) {
-
-    let _item = undefined;
-    for (let i = 0; i < ui.items.length; i++) {
-        if (topic_ == ui.items[i].topic) {
-            _item = ui.items[i];
-            _item.index = i;
-            break;
-        }
-    }
-
-    if (undefined === _item) {
-        console.error("Topic not found in ui.items: " + topic_ + ". This should not happen.");
-        return;
-    }
-
-    let _id_text = "text" + _item.index;
-    $("#" + _id_text).val(message_);
-
-    if (undefined === this.message_timed) {
-        // set flag
-        this.message_timed = setTimeout(() => {
-            $("#" + _id_text).val("");
-
-            // un-set flag
-            this.message_timed = undefined;
-        }, 1000);
-    }
 }
 
 export default App
