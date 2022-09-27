@@ -91,63 +91,70 @@ App.prototype.add_tablist_group = function (parent_id_) {
     return _list_id;
 }
 
-App.prototype.add_tab = function (parent_id_) {
-    let _tab_id = "tab" + i;
+App.prototype.add_tab = function (parent_id_, sufix_) {
+    let _tab_id = "tab" + sufix_;
     let _tab = '<a id="' + _tab_id + '" class="list-group-item" role="tab"></a>';
     $("#" + parent_id_).append(_tab);
 
+    console.debug("added '" + _tab_id + "' to '" + parent_id_ + "'");
     return _tab_id;
 }
 
-App.prototype.add_row = function (parent_id_) {
-    let _row_id = "row" + i;
+App.prototype.add_row = function (parent_id_, sufix_) {
+    let _row_id = "row" + sufix_;
     let _row = '<div id="' + _row_id + '" class="row justify-content-md-center"></div>';
     $("#" + parent_id_).append(_row);
 
+    console.debug("added '" + _row_id + "' to '" + parent_id_ + "'");
     return _row_id;
 }
 
-App.prototype.add_col1 = function (parent_id_) {
-    let _col1_id = "col" + i + "_1";
+App.prototype.add_col1 = function (parent_id_, sufix_) {
+    let _col1_id = "col" + sufix_ + "_1";
     let _col1 = '<div id="' + _col1_id + '" class="col-md-auto"></div>';
     $("#" + parent_id_).append(_col1);
 
+    console.debug("added '" + _col1_id + "' to '" + parent_id_ + "'");
     return _col1_id;
 }
 
-App.prototype.add_col2 = function (parent_id_) {
-    let _col2_id = "col" + i + "_2";
+App.prototype.add_col2 = function (parent_id_, sufix_) {
+    let _col2_id = "col" + sufix_ + "_2";
     let _col2 = '<div id="' + _col2_id + '" class="col-md-auto"></div>';
     $("#" + parent_id_).append(_col2);
 
+    console.debug("added '" + _col2_id + "' to '" + parent_id_ + "'");
     return _col2_id;
 }
 
-App.prototype.add_button = function (parent_id_) {
-    let _button_id = "button" + i;
+App.prototype.add_button = function (parent_id_, sufix_, name_) {
+    let _button_id = "button" + sufix_;
     let _button = '<button id="' + _button_id + '" class="btn btn-primary" style="width: 300px">'
-        + _item.name
+        + name_
         + '</button>';
     $("#" + parent_id_).append(_button);
 
+    console.debug("added '" + _button_id + "' to '" + parent_id_ + "'");
     return _button_id;
 }
 
-App.prototype.add_badge = function (parent_id_) {
-    let _badge_id = "badge" + i;
+App.prototype.add_badge = function (parent_id_, sufix_) {
+    let _badge_id = "badge" + sufix_;
     let _badge = '&nbsp<span id="' + _badge_id + '" class="badge badge-light bg-secondary">&nbsp</span>&nbsp';
     $("#" + parent_id_).append(_badge);
 
+    console.debug("added '" + _badge_id + "' to '" + parent_id_ + "'");
     return _badge_id;
 }
 
-App.prototype.add_text = function (parent_id_) {
-    let _text_id = "text" + i;
+App.prototype.add_text = function (parent_id_, sufix_, topic_) {
+    let _text_id = "text" + sufix_;
     let _text = '<textarea id="' + _text_id + '" class="form-control text-dark bg-light" type="text" style="width: 300px" placeholder="'
-        + _item.topic
+        + topic_
         + '" readonly></textarea>'
     $("#" + parent_id_).append(_text);
 
+    console.debug("added '" + _text_id + "' to '" + parent_id_ + "'");
     return _text_id;
 }
 
@@ -171,18 +178,17 @@ App.prototype.add_items_to_tablist_dynamically = function (parent_id_) {
     for (let i = 0; i < ui.items.length; i++) {
 
         let _item = ui.items[i];
-
         if (!this.check_item_fields(_item)) {
             return;
         }
 
-        let _tab_id = this.add_tab(parent_id_);
-        let _row_id = this.add_row(_tab_id);
-        let _col1_id = this.add_col1(_row_id);
-        let _col2_id = this.add_col2(_row_id);
-        let _button_id = this.add_button(_col1_id);
-        let _badge_id = this.add_badge(_button_id);
-        let _text_id = this.add_text(_col2_id);
+        let _tab_id = this.add_tab(parent_id_, i);
+        let _row_id = this.add_row(_tab_id, i);
+        let _col1_id = this.add_col1(_row_id, i);
+        let _col2_id = this.add_col2(_row_id, i);
+        let _button_id = this.add_button(_col1_id, i, _item.name);
+        let _badge_id = this.add_badge(_button_id, i);
+        let _text_id = this.add_text(_col2_id, i, _item.topic);
     }
 
     console.debug("added ui-items: " + ui.items.length + " to '" + parent_id_ + "'");
