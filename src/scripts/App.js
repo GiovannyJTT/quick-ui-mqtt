@@ -67,7 +67,7 @@ App.prototype.connect_to_mqtt_broker = function () {
     // on reconnecting event
     this.client.on("reconnect",
         function (e) {
-            console.warn("mqtt.client: connection failed, reconnecting to: '" + _url + "'");
+            console.warn("mqtt.client: connection lost, reconnecting...");
 
             this.on_reconnecting();
         }.bind(this)
@@ -207,7 +207,6 @@ App.prototype.add_broker_info = function (parent_id_) {
     // add _text_status to col2
     // will be updated on_connected / on_reconnect
     const _text_status_id = this.add_text(_col2_id, _sufix + "_status", "status");
-    // $("#" + _text_status_id).attr("style", "width: 150px");
 }
 
 /**
