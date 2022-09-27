@@ -1,4 +1,3 @@
-import { Button } from 'bootstrap';
 import * as mqtt from 'mqtt'
 import ui from './ui_setup.json'
 
@@ -11,8 +10,8 @@ class App {
         this.connect_to_mqtt_broker();
 
         // ui
-        const _list_id = this.add_list_group("container");
-        this.add_items_dynamically(_list_id);
+        const _list_id = this.add_tablist_group("container");
+        this.add_items_to_tablist_dynamically(_list_id);
         this.add_buttons_callbacks_dynamically();
     }
 }
@@ -61,17 +60,95 @@ App.prototype.disconnect_from_mqtt_broker = function () {
     this.client = undefined;
 }
 
-/**
- * Creates an empty bootstrap-list of tabs that will be filled with ui-items
- */
-App.prototype.add_list_group = function (parent_id) {
+App.prototype.check_item_fields = function (item_) {
+    if (undefined === item_.topic) {
+        console.error("item " + i + " has no 'topic': " + JSON.stringify(item_) + ". Aborting");
+        return false;
+    }
 
+    if (undefined === item_.name) {
+        console.error("item " + i + " has no 'name': " + JSON.stringify(item_) + ". Aborting");
+        return false;
+    }
+
+    if (undefined === item_.qos) {
+        console.error("item " + i + " has no 'qos': " + JSON.stringify(item_) + ". Aborting");
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * Creates an empty bootstrap-list of tabs that will be filled with ui-items (vertically)
+ */
+App.prototype.add_tablist_group = function (parent_id_) {
     const _list_id = "list_tab";
     const _list = '<div id="' + _list_id + '" class="list-group" role="tablist"></div>'
-    $("#" + parent_id).append(_list);
+    $("#" + parent_id_).append(_list);
 
-    console.debug("added '" + _list_id + "' to '" + parent_id + "'");
+    console.debug("added '" + _list_id + "' to '" + parent_id_ + "'");
     return _list_id;
+}
+
+App.prototype.add_tab = function (parent_id_) {
+    let _tab_id = "tab" + i;
+    let _tab = '<a id="' + _tab_id + '" class="list-group-item" role="tab"></a>';
+    $("#" + parent_id_).append(_tab);
+
+    return _tab_id;
+}
+
+App.prototype.add_row = function (parent_id_) {
+    let _row_id = "row" + i;
+    let _row = '<div id="' + _row_id + '" class="row justify-content-md-center"></div>';
+    $("#" + parent_id_).append(_row);
+
+    return _row_id;
+}
+
+App.prototype.add_col1 = function (parent_id_) {
+    let _col1_id = "col" + i + "_1";
+    let _col1 = '<div id="' + _col1_id + '" class="col-md-auto"></div>';
+    $("#" + parent_id_).append(_col1);
+
+    return _col1_id;
+}
+
+App.prototype.add_col2 = function (parent_id_) {
+    let _col2_id = "col" + i + "_2";
+    let _col2 = '<div id="' + _col2_id + '" class="col-md-auto"></div>';
+    $("#" + parent_id_).append(_col2);
+
+    return _col2_id;
+}
+
+App.prototype.add_button = function (parent_id_) {
+    let _button_id = "button" + i;
+    let _button = '<button id="' + _button_id + '" class="btn btn-primary" style="width: 300px">'
+        + _item.name
+        + '</button>';
+    $("#" + parent_id_).append(_button);
+
+    return _button_id;
+}
+
+App.prototype.add_badge = function (parent_id_) {
+    let _badge_id = "badge" + i;
+    let _badge = '&nbsp<span id="' + _badge_id + '" class="badge badge-light bg-secondary">&nbsp</span>&nbsp';
+    $("#" + parent_id_).append(_badge);
+
+    return _badge_id;
+}
+
+App.prototype.add_text = function (parent_id_) {
+    let _text_id = "text" + i;
+    let _text = '<textarea id="' + _text_id + '" class="form-control text-dark bg-light" type="text" style="width: 300px" placeholder="'
+        + _item.topic
+        + '" readonly></textarea>'
+    $("#" + parent_id_).append(_text);
+
+    return _text_id;
 }
 
 /**
@@ -89,75 +166,26 @@ App.prototype.add_list_group = function (parent_id) {
  *      - When publish succeeded color will blink to `green` for 100 ms
  *      - When publish failed color will blink to `red` for 100 ms
  */
-App.prototype.add_items_dynamically = function (parent_id) {
+App.prototype.add_items_to_tablist_dynamically = function (parent_id_) {
 
     for (let i = 0; i < ui.items.length; i++) {
 
         let _item = ui.items[i];
 
-        // check fields
-        if (undefined === _item.topic) {
-            console.error("item " + i + " has no 'topic': " + JSON.stringify(_item) + ". Aborting");
+        if (!this.check_item_fields(_item)) {
             return;
         }
 
-        if (undefined === _item.name) {
-            console.error("item " + i + " has no 'name': " + JSON.stringify(_item) + ". Aborting");
-            return;
-        }
-
-        if (undefined === _item.qos) {
-            console.error("item " + i + " has no 'qos': " + JSON.stringify(_item) + ". Aborting");
-            return;
-        }
-
-        // add tab
-        let _tab_id = "tab" + i;
-        let _tab = '<a id="' + _tab_id + '" class="list-group-item" role="tab"></a>';
-
-        $("#" + parent_id).append(_tab);
-
-        // add row to tab
-        let _row_id = "row" + i;
-        let _row = '<div id="' + _row_id + '" class="row justify-content-md-center"></div>';
-        $("#" + _tab_id).append(_row);
-
-        // add col1 to row
-        let _col1_id = "col" + i + "_1";
-        let _col1 = '<div id="' + _col1_id + '" class="col-md-auto"></div>';
-
-        $("#" + _row_id).append(_col1);
-
-        // add col2 to row
-        let _col2_id = "col" + i + "_2";
-        let _col2 = '<div id="' + _col2_id + '" class="col-md-auto"></div>';
-
-        $("#" + _row_id).append(_col2);
-
-        // add button to col1
-        let _button_id = "button" + i;
-        let _button = '<button id="' + _button_id + '" class="btn btn-primary" style="width: 300px">'
-            + _item.name
-            + '</button>';
-
-        $("#" + _col1_id).append(_button);
-
-        // add badge to button
-        let _badge_id = "badge" + i;
-        let _badge = '&nbsp<span id="' + _badge_id + '" class="badge badge-light bg-secondary">&nbsp</span>&nbsp';
-
-        $("#" + _button_id).append(_badge);
-
-        // add text-box to col2
-        let _text_id = "text" + i;
-        let _text = '<textarea id="' + _text_id + '" class="form-control text-dark bg-light" type="text" style="width: 300px" placeholder="'
-            + _item.topic
-            + '" readonly></textarea>'
-
-        $("#" + _col2_id).append(_text);
+        let _tab_id = this.add_tab(parent_id_);
+        let _row_id = this.add_row(_tab_id);
+        let _col1_id = this.add_col1(_row_id);
+        let _col2_id = this.add_col2(_row_id);
+        let _button_id = this.add_button(_col1_id);
+        let _badge_id = this.add_badge(_button_id);
+        let _text_id = this.add_text(_col2_id);
     }
 
-    console.debug("added ui-items: " + ui.items.length + " to '" + parent_id + "'");
+    console.debug("added ui-items: " + ui.items.length + " to '" + parent_id_ + "'");
 }
 
 /**
@@ -196,15 +224,17 @@ App.prototype.add_buttons_callbacks_dynamically = function () {
                             function (e) {
                                 $("#" + _id_badge).attr("class", "badge badge-light bg-warning");
                                 $("#" + _id_text).val(_item.message);
-                                
-                                setTimeout( () => { 
+                                $("#" + _id_button).prop("disabled", true);
+
+                                setTimeout(() => {
                                     $("#" + _id_badge).attr("class", "badge badge-light bg-secondary");
                                 }, 100);
-                                
+
                                 setTimeout(() => {
-                                    $("#" + _id_text).val("");                                    
+                                    $("#" + _id_text).val("");
+                                    $("#" + _id_button).prop("disabled", false);
                                 }, 1000);
-                                
+
                                 let _str = "mqtt.client.published: " + _item.topic + " " + _item.message;
                                 console.debug(_str);
 
@@ -234,7 +264,7 @@ App.prototype.add_buttons_callbacks_dynamically = function () {
                             this.client.subscribe(_item.topic, { qos: _item.qos, retain: false },
                                 function (e) {
                                     $("#" + _id_badge).attr("class", "badge badge-light bg-success");
-                                    
+
                                     let _str = "mqtt.client.subscribed: " + _item.topic;
                                     console.debug(_str);
 
@@ -248,7 +278,7 @@ App.prototype.add_buttons_callbacks_dynamically = function () {
                             this.client.unsubscribe(_item.topic,
                                 function (e) {
                                     $("#" + _id_badge).attr("class", "badge badge-light bg-danger");
-                                    
+
                                     let _str = "mqtt.client.unsubscribed: " + _item.topic;
                                     console.debug(_str);
 
@@ -273,7 +303,7 @@ App.prototype.add_buttons_callbacks_dynamically = function () {
 App.prototype.on_message_received = function (topic_, message_) {
 
     let _item = undefined;
-    for (let i=0; i < ui.items.length; i++) {
+    for (let i = 0; i < ui.items.length; i++) {
         if (topic_ == ui.items[i].topic) {
             _item = ui.items[i];
             _item.index = i;
@@ -282,16 +312,22 @@ App.prototype.on_message_received = function (topic_, message_) {
     }
 
     if (undefined === _item) {
-        console.error("topic not found in ui.items: " + topic_ + ". This should not happen.");
+        console.error("Topic not found in ui.items: " + topic_ + ". This should not happen.");
         return;
     }
 
     let _id_text = "text" + _item.index;
     $("#" + _id_text).val(message_);
 
-    setTimeout(() => {
-        $("#" + _id_text).val("");                                    
-    }, 1000);
+    if (undefined === this.timed) {
+        // set flag
+        this.timed = setTimeout(() => {
+            $("#" + _id_text).val("");
+
+            // un-set flag
+            this.timed = undefined;
+        }, 1000);
+    }
 }
 
 export default App
