@@ -11,6 +11,7 @@ class App {
 
         // ui
         const _list_id = this.add_tablist_group("container");
+        this.add_broker_info(_list_id);
         this.add_items_to_tablist_dynamically(_list_id);
         this.add_buttons_callbacks_dynamically();
     }
@@ -31,6 +32,8 @@ App.prototype.connect_to_mqtt_broker = function () {
     this.client.on("connect",
         function (e) {
             console.warn("mqtt.client: connected: '" + this.client.connected + "' to broker: '" + _url + "'");
+
+            this.on_connected();
         }.bind(this)
     );
 
@@ -47,6 +50,26 @@ App.prototype.connect_to_mqtt_broker = function () {
     this.client.on("disconnect",
         function (e) {
             console.warn("mqtt.client: disconnected: '" + !this.client.connected + "' from broker: '" + _url + "'");
+
+            this.on_disconnected();
+        }.bind(this)
+    );
+
+    // on offline
+    this.client.on("error",
+        function (e) {
+            console.warn("mqtt.client: error: '" + JSON.stringify(e) + "'");
+
+            this.on_error(e);
+        }.bind(this)
+    )
+
+    // on reconnecting event
+    this.client.on("reconnect",
+        function (e) {
+            console.warn("mqtt.client: connection failed, reconnecting to: '" + _url + "'");
+
+            this.on_reconnecting();
         }.bind(this)
     );
 }
@@ -55,8 +78,10 @@ App.prototype.connect_to_mqtt_broker = function () {
  * Removes all listeners (subscribers), closes connection to mqtt-broker and deletes mqtt-client
  */
 App.prototype.disconnect_from_mqtt_broker = function () {
-    this.client.removeAllListeners();
-    this.client.end();
+    console.debug("mqtt.client: explicitly disconnecting from broker")
+
+    this.client.end(true);
+    this.on_disconnected();
     this.client = undefined;
 }
 
@@ -156,6 +181,33 @@ App.prototype.add_text = function (parent_id_, sufix_, topic_) {
 
     console.debug("added '" + _text_id + "' to '" + parent_id_ + "'");
     return _text_id;
+}
+
+App.prototype.add_broker_info = function (parent_id_) {
+    const _sufix = "_broker";
+    
+    const _tab_id = this.add_tab(parent_id_, _sufix);
+    const _row_id = this.add_row(_tab_id, _sufix);
+    const _col1_id = this.add_col1(_row_id, _sufix);
+    const _col2_id = this.add_col2(_row_id, _sufix);
+
+    const _url = "mqtt://" + ui.mqtt_broker.host + ":" + ui.mqtt_broker.port;
+
+    const _options = ui.mqtt_broker.options;
+    const _options_str = "clientId " + _options.clientId + "\n"
+        + "keepalive " + _options.keepalive + "\n"
+        + "reconnect " + _options.reconnectPeriod + "\n"
+        + "connectTimeout " + _options.connectTimeout;
+
+    const _text_content = _url + "\n" + _options_str;
+
+    // add _text_config to col1
+    const _text_config_id = this.add_text(_col1_id, _sufix + "_config", _text_content);
+
+    // add _text_status to col2
+    // will be updated on_connected / on_reconnect
+    const _text_status_id = this.add_text(_col2_id, _sufix + "_status", "status");
+    // $("#" + _text_status_id).attr("style", "width: 150px");
 }
 
 /**
@@ -303,6 +355,43 @@ App.prototype.add_buttons_callbacks_dynamically = function () {
     console.debug("added ui-items callbacks: " + ui.items.length);
 }
 
+App.prototype.on_connected = function () {
+    const _id_text = "text_broker_status";
+    $("#" + _id_text).val("connected");
+    $("#" + _id_text).attr("class", "form-control text-success bg-light");
+}
+
+App.prototype.on_disconnected = function () {
+    const _id_text = "text_broker_status";
+    $("#" + _id_text).val("disconnected");
+    $("#" + _id_text).attr("class", "form-control text-danger bg-light");
+}
+
+App.prototype.on_error = function (e) {
+    const _id_text = "text_broker_status";
+    $("#" + _id_text).val("error: " + JSON.stringify(e));
+}
+
+App.prototype.on_reconnecting = function () {
+    const _id_text = "text_broker_status";
+    $("#" + _id_text).val("reconnecting");
+    $("#" + _id_text).attr("class", "form-control text-warning bg-light");
+
+    if (undefined === this.reconnect_timed) {
+        this.reconect_timed = true;
+
+        setTimeout(() => {
+            if (!this.client.connected) {
+                $("#" + _id_text).val("");
+                $("#" + _id_text).attr("class", "form-control text-dark bg-light");    
+            }
+
+            this.reconect_timed = undefined;
+        }, 800);
+        // less than 1000 defined as reconnectTimeout
+    }
+}
+
 /**
  * Show received message into the corresponding text-box
  */
@@ -325,13 +414,13 @@ App.prototype.on_message_received = function (topic_, message_) {
     let _id_text = "text" + _item.index;
     $("#" + _id_text).val(message_);
 
-    if (undefined === this.timed) {
+    if (undefined === this.message_timed) {
         // set flag
-        this.timed = setTimeout(() => {
+        this.message_timed = setTimeout(() => {
             $("#" + _id_text).val("");
 
             // un-set flag
-            this.timed = undefined;
+            this.message_timed = undefined;
         }, 1000);
     }
 }
