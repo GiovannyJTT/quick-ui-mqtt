@@ -1,5 +1,4 @@
 import * as mqtt from 'mqtt'
-import ui from '../resources/ui_setup.json'
 
 /**
  * Wraps all needed to create our UI from the `ui_setup.json` and adds publish / subscribe into the callbacks
@@ -7,7 +6,7 @@ import ui from '../resources/ui_setup.json'
 class App {
     constructor() {
         this.id_list = this.add_tablist_group("container");
-
+        
         this.add_broker_tab(this.id_list);
         this.add_broker_button_cb();
 
@@ -67,8 +66,10 @@ App.prototype.on_ui_setup = function () {
  * https://www.cloudamqp.com/docs/nodejs_mqtt.html
  */
 App.prototype.connect_to_mqtt_broker = function () {
-    const _url = "mqtt://" + ui.mqtt_broker.host + ":" + ui.mqtt_broker.port;
-    this.client = mqtt.connect(_url, ui.mqtt_broker.options);
+    const _url = "mqtt://" + this.ui.mqtt_broker.host + ":" + this.ui.mqtt_broker.port;
+    this.client = mqtt.connect(_url, this.ui.mqtt_broker.options);
+
+    this.set_broker_info_text();
 
     // on connected event
     this.client.on("connect",
@@ -116,6 +117,22 @@ App.prototype.connect_to_mqtt_broker = function () {
     );
 }
 
+App.prototype.set_broker_info_text = function () {
+    const _url = "mqtt://" + this.ui.mqtt_broker.host + ":" + this.ui.mqtt_broker.port;
+    const _options = this.ui.mqtt_broker.options;
+    const _options_str = "clientId " + _options.clientId + "\n"
+        + "keepalive " + _options.keepalive + "\n"
+        + "reconnect " + _options.reconnectPeriod + "\n"
+        + "connectTimeout " + _options.connectTimeout;
+    const _content = _url + "\n" + _options_str;
+
+    $("#" + "text_broker_config").val(_content);
+}
+
+App.prototype.unset_broker_info_text = function () {
+    $("#" + "text_broker_config").val("");
+}
+
 /**
  * Removes all listeners (subscribers), closes connection to mqtt-broker, deletes mqtt-client,
  *  and disables all buttons of topics
@@ -128,6 +145,7 @@ App.prototype.disconnect_from_mqtt_broker = function () {
     this.client = undefined;
 
     this.disable_all_buttons_of_topics();
+    this.unset_broker_info_text();
 }
 
 App.prototype.disable_all_buttons_of_topics = function () {
@@ -332,15 +350,8 @@ App.prototype.add_broker_tab = function (parent_id_) {
     $("#" + _id_badge).attr("class", "badge badge-light bg-secondary");
 
     // add text_config to col2
-    const _url = "mqtt://" + ui.mqtt_broker.host + ":" + ui.mqtt_broker.port;
-    const _options = ui.mqtt_broker.options;
-    const _options_str = "clientId " + _options.clientId + "\n"
-        + "keepalive " + _options.keepalive + "\n"
-        + "reconnect " + _options.reconnectPeriod + "\n"
-        + "connectTimeout " + _options.connectTimeout;
-    const _content = _url + "\n" + _options_str;
-
-    const _id_text_config = this.add_textarea(_id_col2, _sufix + "_config", _content);
+    // it will be filled when connect_to_mqtt_broker
+    const _id_text_config = this.add_textarea(_id_col2, _sufix + "_config", "");
 }
 
 App.prototype.add_broker_button_cb = function () {
