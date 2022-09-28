@@ -6,7 +6,7 @@ import * as mqtt from 'mqtt'
 class App {
     constructor() {
         this.id_list = this.add_tablist_group("container");
-        
+
         this.add_broker_tab(this.id_list);
         this.add_broker_button_cb();
 
@@ -21,7 +21,7 @@ class App {
  * @param {String} url_ 
  */
 App.prototype.get_ui_setup = function (url_) {
-    
+
     const _res = $.getJSON(url_,
         function (data) {
             this.ui = data;
@@ -362,6 +362,7 @@ App.prototype.add_broker_button_cb = function () {
             // avoid burst of clicks
             if (undefined === this.broker_button_timed) {
                 this.broker_button_timed = true;
+
                 $("#" + _id_button).prop("disabled", true);
 
                 if (undefined === this.client) {
@@ -371,12 +372,10 @@ App.prototype.add_broker_button_cb = function () {
                     this.disconnect_from_mqtt_broker();
                 }
 
-                setTimeout(
-                    function (e) {
-                        $("#" + "button_broker").prop("disabled", false);
-                        this.broker_button_timed = undefined;
-                    }.bind(this),
-                    500);
+                setTimeout(() => {
+                    $("#" + "button_broker").prop("disabled", false);
+                    this.broker_button_timed = undefined;
+                }, 500);
             }
         }.bind(this)
     );
@@ -466,6 +465,9 @@ App.prototype.add_buttons_cb = function () {
                                 $("#" + _id_text).val(_item.message);
                                 $("#" + _id_button).prop("disabled", true);
 
+                                let _str = "mqtt.client.published: " + _item.topic + " " + _item.message;
+                                console.debug(_str);
+
                                 setTimeout(() => {
                                     $("#" + _id_badge).attr("class", "badge badge-light bg-secondary");
                                 }, 100);
@@ -475,10 +477,6 @@ App.prototype.add_buttons_cb = function () {
                                     $("#" + _id_button).prop("disabled", false);
                                     _item.processing = undefined;
                                 }, 300);
-
-                                let _str = "mqtt.client.published: " + _item.topic + " " + _item.message;
-                                console.debug(_str);
-
                             }.bind(this)
                         );
                     }
