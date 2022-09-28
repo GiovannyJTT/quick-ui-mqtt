@@ -15,7 +15,7 @@ The main purpose of this project is to provide a simple boilerplate for an `html
     * `qos` (mandatory, number [0,1,2]) it will be used for quality of service into the mqtt with that specific topic
     * `message` (optional, string) 
         * A `mqtt-publisher` will be created when the field `message` is present, otherwise it will create a `mqtt-subscriber`
-        * If your topic doesn't receive any message as payload then just put empty string `message: ""`
+        * If your publish-topic doesn't have any message as payload then just put empty string `message: ""` to tell the App this is a publisher
 
 ## App.js
 
