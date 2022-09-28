@@ -51,9 +51,8 @@ App.prototype.get_ui_setup = function (url_) {
  * 2. Adds new tabs and filles the new items
  * 3. Attaches buttons callbacks
  * 4. Disables all buttons initilly
- * @param {*} data_ 
  */
-App.prototype.on_ui_setup = function (data_) {
+App.prototype.on_ui_setup = function () {
     this.remove_items_from_tablist();
     this.add_items_to_tablist(this.id_list);
     this.add_buttons_cb();
@@ -132,14 +131,14 @@ App.prototype.disconnect_from_mqtt_broker = function () {
 }
 
 App.prototype.disable_all_buttons_of_topics = function () {
-    for (let i = 0; i < ui.items.length; i++) {
+    for (let i = 0; i < this.ui.items.length; i++) {
         let _id_button = "button" + i;
         $("#" + _id_button).prop("disabled", true);
     }
 }
 
 App.prototype.enable_all_buttons_of_topics = function () {
-    for (let i = 0; i < ui.items.length; i++) {
+    for (let i = 0; i < this.ui.items.length; i++) {
         let _id_button = "button" + i;
         $("#" + _id_button).prop("disabled", false);
     }
@@ -193,16 +192,16 @@ App.prototype.on_reconnecting = function () {
 App.prototype.on_message_received = function (topic_, message_, packet_) {
 
     let _item = undefined;
-    for (let i = 0; i < ui.items.length; i++) {
-        if (topic_ == ui.items[i].topic) {
-            _item = ui.items[i];
+    for (let i = 0; i < this.ui.items.length; i++) {
+        if (topic_ == this.ui.items[i].topic) {
+            _item = this.ui.items[i];
             _item.index = i;
             break;
         }
     }
 
     if (undefined === _item) {
-        console.error("Topic not found in ui.items: " + topic_ + ". This should not happen.");
+        console.error("Topic not found in this.ui.items: " + topic_ + ". This should not happen.");
         return;
     }
 
@@ -390,9 +389,9 @@ App.prototype.add_broker_button_cb = function () {
 App.prototype.add_items_to_tablist = function (parent_id_) {
     console.debug("adding new items into tablist")
 
-    for (let i = 0; i < ui.items.length; i++) {
+    for (let i = 0; i < this.ui.items.length; i++) {
 
-        let _item = ui.items[i];
+        let _item = this.ui.items[i];
         if (!this.check_item_fields(_item)) {
             return;
         }
@@ -406,13 +405,13 @@ App.prototype.add_items_to_tablist = function (parent_id_) {
         let _id_text = this.add_textarea(_id_col2, i, _item.topic);
     }
 
-    console.debug("added ui-items: " + ui.items.length + " to '" + parent_id_ + "'");
+    console.debug("added ui-items: " + this.ui.items.length + " to '" + parent_id_ + "'");
 }
 
 App.prototype.remove_items_from_tablist = function () {
-    console.debug("removing previous item from tablist (if existing)")
+    console.debug("removing previous items from tablist (if existing)")
 
-    for (let i = 0; i < ui.items.length; i++) {
+    for (let i = 0; i < this.ui.items.length; i++) {
         let _id_tab = "tab" + i;
         $("#" + _id_tab).remove();
     }
@@ -428,9 +427,9 @@ App.prototype.remove_items_from_tablist = function () {
  */
 App.prototype.add_buttons_cb = function () {
 
-    for (let i = 0; i < ui.items.length; i++) {
+    for (let i = 0; i < this.ui.items.length; i++) {
 
-        let _item = ui.items[i];
+        let _item = this.ui.items[i];
         let _id_button = 'button' + i;
         let _id_badge = "badge" + i;
         let _id_text = "text" + i;
@@ -524,7 +523,7 @@ App.prototype.add_buttons_cb = function () {
         }
     }
 
-    console.debug("added ui-items callbacks: " + ui.items.length);
+    console.debug("added ui-items callbacks: " + this.ui.items.length);
 }
 
 export default App
