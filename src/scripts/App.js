@@ -10,9 +10,9 @@ class App {
         this.connect_to_mqtt_broker();
 
         // ui
-        const _list_id = this.add_tablist_group("container");
-        this.add_broker_info(_list_id);
-        this.add_items_to_tablist_dynamically(_list_id);
+        const _id_list = this.add_tablist_group("container");
+        this.add_broker_info_tab(_id_list);
+        this.add_items_to_tablist_dynamically(_id_list);
         this.add_buttons_callbacks_dynamically();
     }
 }
@@ -42,7 +42,7 @@ App.prototype.connect_to_mqtt_broker = function () {
         function (topic, message, packet) {
             console.debug("mqtt.client: received message: '" + message + "' on '" + topic + "'");
 
-            this.on_message_received(topic, message);
+            this.on_message_received(topic, message, packet);
         }.bind(this)
     );
 
@@ -86,15 +86,15 @@ App.prototype.disconnect_from_mqtt_broker = function () {
 }
 
 App.prototype.on_connected = function () {
-    const _id_text = "text_broker_status";
-    $("#" + _id_text).val("connected");
-    $("#" + _id_text).attr("class", "form-control text-success bg-light");
+    const _id_badge = "badge_broker";
+    $("#" + _id_badge).text("Connected");
+    $("#" + _id_badge).attr("class", "badge badge-light bg-success");
 }
 
 App.prototype.on_disconnected = function () {
-    const _id_text = "text_broker_status";
-    $("#" + _id_text).val("disconnected");
-    $("#" + _id_text).attr("class", "form-control text-danger bg-light");
+    const _id_badge = "badge_broker";
+    $("#" + _id_badge).text("Disconnected");
+    $("#" + _id_badge).attr("class", "badge badge-light bg-danger");
 }
 
 App.prototype.on_error = function (e) {
@@ -103,21 +103,21 @@ App.prototype.on_error = function (e) {
 }
 
 App.prototype.on_reconnecting = function () {
-    const _id_text = "text_broker_status";
-    $("#" + _id_text).val("reconnecting");
-    $("#" + _id_text).attr("class", "form-control text-warning bg-light");
+    const _id_badge = "badge_broker";
+    $("#" + _id_badge).text("Reconnecting");
+    $("#" + _id_badge).attr("class", "badge badge-light bg-warning");
 
     if (undefined === this.reconnect_timed) {
         this.reconect_timed = true;
 
         setTimeout(() => {
             if (!this.client.connected) {
-                $("#" + _id_text).val("");
-                $("#" + _id_text).attr("class", "form-control text-dark bg-light");    
+                $("#" + _id_badge).text("Status");
+                $("#" + _id_badge).attr("class", "badge badge-light bg-secondary");    
             }
 
             this.reconect_timed = undefined;
-        }, 800);
+        }, 500);
         // less than 1000 defined as reconnectTimeout
     }
 }
@@ -125,7 +125,7 @@ App.prototype.on_reconnecting = function () {
 /**
  * Show received message into the corresponding text-box
  */
-App.prototype.on_message_received = function (topic_, message_) {
+App.prototype.on_message_received = function (topic_, message_, packet_) {
 
     let _item = undefined;
     for (let i = 0; i < ui.items.length; i++) {
@@ -178,105 +178,103 @@ App.prototype.check_item_fields = function (item_) {
  * Creates an empty bootstrap-list of tabs that will be filled with ui-items (vertically)
  */
 App.prototype.add_tablist_group = function (parent_id_) {
-    const _list_id = "list_tab";
-    const _list = '<div id="' + _list_id + '" class="list-group" role="tablist"></div>'
+    const _id = "list_tab";
+    const _list = '<div id="' + _id + '" class="list-group" role="tablist"></div>'
     $("#" + parent_id_).append(_list);
 
-    console.debug("added '" + _list_id + "' to '" + parent_id_ + "'");
-    return _list_id;
+    console.debug("added '" + _id + "' to '" + parent_id_ + "'");
+    return _id;
 }
 
 App.prototype.add_tab = function (parent_id_, sufix_) {
-    let _tab_id = "tab" + sufix_;
-    let _tab = '<a id="' + _tab_id + '" class="list-group-item" role="tab"></a>';
+    let _id = "tab" + sufix_;
+    let _tab = '<a id="' + _id + '" class="list-group-item" role="tab"></a>';
     $("#" + parent_id_).append(_tab);
 
-    console.debug("added '" + _tab_id + "' to '" + parent_id_ + "'");
-    return _tab_id;
+    console.debug("added '" + _id + "' to '" + parent_id_ + "'");
+    return _id;
 }
 
 App.prototype.add_row = function (parent_id_, sufix_) {
-    let _row_id = "row" + sufix_;
-    let _row = '<div id="' + _row_id + '" class="row justify-content-md-center"></div>';
+    let _id = "row" + sufix_;
+    let _row = '<div id="' + _id + '" class="row justify-content-md-center"></div>';
     $("#" + parent_id_).append(_row);
 
-    console.debug("added '" + _row_id + "' to '" + parent_id_ + "'");
-    return _row_id;
+    console.debug("added '" + _id + "' to '" + parent_id_ + "'");
+    return _id;
 }
 
-App.prototype.add_col1 = function (parent_id_, sufix_) {
-    let _col1_id = "col" + sufix_ + "_1";
-    let _col1 = '<div id="' + _col1_id + '" class="col-md-auto"></div>';
-    $("#" + parent_id_).append(_col1);
+App.prototype.add_col = function (parent_id_, sufix_, col_num_) {
+    if (undefined === col_num_) {
+        console.error("add_col: col_num undefined");
+        return;
+    }
 
-    console.debug("added '" + _col1_id + "' to '" + parent_id_ + "'");
-    return _col1_id;
-}
+    let _id = "col" + sufix_ + "_" + col_num_;
+    let _col = '<div id="' + _id + '" class="col-md-auto"></div>';
+    $("#" + parent_id_).append(_col);
 
-App.prototype.add_col2 = function (parent_id_, sufix_) {
-    let _col2_id = "col" + sufix_ + "_2";
-    let _col2 = '<div id="' + _col2_id + '" class="col-md-auto"></div>';
-    $("#" + parent_id_).append(_col2);
-
-    console.debug("added '" + _col2_id + "' to '" + parent_id_ + "'");
-    return _col2_id;
+    console.debug("added '" + _id + "' to '" + parent_id_ + "'");
+    return _id;
 }
 
 App.prototype.add_button = function (parent_id_, sufix_, name_) {
-    let _button_id = "button" + sufix_;
-    let _button = '<button id="' + _button_id + '" class="btn btn-primary" style="width: 300px">'
+    let _id = "button" + sufix_;
+    let _button = '<button id="' + _id + '" class="btn btn-primary" style="width: 300px">'
         + name_
         + '</button>';
     $("#" + parent_id_).append(_button);
 
-    console.debug("added '" + _button_id + "' to '" + parent_id_ + "'");
-    return _button_id;
+    console.debug("added '" + _id + "' to '" + parent_id_ + "'");
+    return _id;
 }
 
 App.prototype.add_badge = function (parent_id_, sufix_) {
-    let _badge_id = "badge" + sufix_;
-    let _badge = '&nbsp<span id="' + _badge_id + '" class="badge badge-light bg-secondary">&nbsp</span>&nbsp';
+    let _id = "badge" + sufix_;
+    let _badge = '&nbsp<span id="' + _id + '" class="badge badge-light bg-secondary">&nbsp</span>&nbsp';
     $("#" + parent_id_).append(_badge);
 
-    console.debug("added '" + _badge_id + "' to '" + parent_id_ + "'");
-    return _badge_id;
+    console.debug("added '" + _id + "' to '" + parent_id_ + "'");
+    return _id;
 }
 
-App.prototype.add_text = function (parent_id_, sufix_, topic_) {
-    let _text_id = "text" + sufix_;
-    let _text = '<textarea id="' + _text_id + '" class="form-control text-dark bg-light" type="text" style="width: 300px" placeholder="'
+App.prototype.add_textarea = function (parent_id_, sufix_, topic_) {
+    let _id = "text" + sufix_;
+    let _text = '<textarea id="' + _id + '" class="form-control text-dark bg-light" type="text" style="width: 300px" placeholder="'
         + topic_
         + '" readonly></textarea>'
     $("#" + parent_id_).append(_text);
 
-    console.debug("added '" + _text_id + "' to '" + parent_id_ + "'");
-    return _text_id;
+    console.debug("added '" + _id + "' to '" + parent_id_ + "'");
+    return _id;
 }
 
-App.prototype.add_broker_info = function (parent_id_) {
+App.prototype.add_broker_info_tab = function (parent_id_) {
     const _sufix = "_broker";
     
-    const _tab_id = this.add_tab(parent_id_, _sufix);
-    const _row_id = this.add_row(_tab_id, _sufix);
-    const _col1_id = this.add_col1(_row_id, _sufix);
-    const _col2_id = this.add_col2(_row_id, _sufix);
+    const _id_tab = this.add_tab(parent_id_, _sufix);
+    const _id_row = this.add_row(_id_tab, _sufix);
+    const _id_col1 = this.add_col(_id_row, _sufix, 1);
+    const _id_col2 = this.add_col(_id_row, _sufix, 2);
 
+    // add button to col1
+    const _id_button = this.add_button(_id_col1, _sufix, "Connect");
+
+    // add badge to button. Badge value will be updated `on_connected`, `on_reconnect`
+    const _id_badge = this.add_badge(_id_button, _sufix);
+    $("#" + _id_badge).text("Status");
+    $("#" + _id_badge).attr("class", "badge badge-light bg-secondary");
+
+    // add text_config to col2
     const _url = "mqtt://" + ui.mqtt_broker.host + ":" + ui.mqtt_broker.port;
-
     const _options = ui.mqtt_broker.options;
     const _options_str = "clientId " + _options.clientId + "\n"
         + "keepalive " + _options.keepalive + "\n"
         + "reconnect " + _options.reconnectPeriod + "\n"
         + "connectTimeout " + _options.connectTimeout;
+    const _content = _url + "\n" + _options_str;
 
-    const _text_content = _url + "\n" + _options_str;
-
-    // add _text_config to col1
-    const _text_config_id = this.add_text(_col1_id, _sufix + "_config", _text_content);
-
-    // add _text_status to col2
-    // will be updated on_connected / on_reconnect
-    const _text_status_id = this.add_text(_col2_id, _sufix + "_status", "status");
+    const _id_text_config = this.add_textarea(_id_col2, _sufix + "_config", _content);
 }
 
 /**
@@ -303,13 +301,13 @@ App.prototype.add_items_to_tablist_dynamically = function (parent_id_) {
             return;
         }
 
-        let _tab_id = this.add_tab(parent_id_, i);
-        let _row_id = this.add_row(_tab_id, i);
-        let _col1_id = this.add_col1(_row_id, i);
-        let _col2_id = this.add_col2(_row_id, i);
-        let _button_id = this.add_button(_col1_id, i, _item.name);
-        let _badge_id = this.add_badge(_button_id, i);
-        let _text_id = this.add_text(_col2_id, i, _item.topic);
+        let _id_tab = this.add_tab(parent_id_, i);
+        let _id_row = this.add_row(_id_tab, i);
+        let _id_col1 = this.add_col(_id_row, i, 1);
+        let _id_col2 = this.add_col(_id_row, i, 2);
+        let _id_button = this.add_button(_id_col1, i, _item.name);
+        let _id_badge = this.add_badge(_id_button, i);
+        let _id_text = this.add_textarea(_id_col2, i, _item.topic);
     }
 
     console.debug("added ui-items: " + ui.items.length + " to '" + parent_id_ + "'");
