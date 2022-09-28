@@ -13,6 +13,7 @@ class App {
 
         this.add_items_to_tablist_dynamically(this.id_list);
         this.add_buttons_cb_dynamically();
+        this.disable_all_buttons_of_topics();
     }
 }
 
@@ -84,11 +85,22 @@ App.prototype.disconnect_from_mqtt_broker = function () {
     this.on_disconnected();
     this.client = undefined;
 
+    this.disable_all_buttons_of_topics();
+}
+
+App.prototype.disable_all_buttons_of_topics = function () {
     for (let i = 0; i < ui.items.length; i++) {
         let _id_button = "button" + i;
         $("#" + _id_button).prop("disabled", true);
     }
-} 
+}
+
+App.prototype.enable_all_buttons_of_topics = function () {
+    for (let i = 0; i < ui.items.length; i++) {
+        let _id_button = "button" + i;
+        $("#" + _id_button).prop("disabled", false);
+    }
+}
 
 /**
  * Changes badge status to `Connected`, button to `Disconnect and enables all buttons of topics
@@ -98,10 +110,7 @@ App.prototype.on_connected = function () {
     $("#" + _id_badge).text("Connected");
     $("#" + _id_badge).attr("class", "badge badge-light bg-success");
 
-    for (let i = 0; i < ui.items.length; i++) {
-        let _id_button = "button" + i;
-        $("#" + _id_button).prop("disabled", false);
-    }
+    this.enable_all_buttons_of_topics();
 }
 
 App.prototype.on_disconnected = function () {
@@ -136,7 +145,7 @@ App.prototype.on_reconnecting = function () {
 }
 
 /**
- * Show received message into the corresponding text-box
+ * Show received message into the corresponding item text-box
  */
 App.prototype.on_message_received = function (topic_, message_, packet_) {
 
@@ -159,7 +168,9 @@ App.prototype.on_message_received = function (topic_, message_, packet_) {
 
     if (undefined === this.message_timed) {
         // set flag
-        this.message_timed = setTimeout(() => {
+        this.message_timed = true;
+
+        setTimeout(() => {
             $("#" + _id_text).val("");
 
             // un-set flag
@@ -300,19 +311,19 @@ App.prototype.add_broker_button_cb = function () {
                 this.broker_button_timed = true;
                 $("#" + _id_button).prop("disabled", true);
 
-                setTimeout(
-                    function (e) {
-                        $("#" + "button_broker").prop("disabled", false);
-                        this.broker_button_timed = undefined;
-                    }.bind(this),
-                    500);
-
                 if (undefined === this.client) {
                     this.connect_to_mqtt_broker();
                 }
                 else {
                     this.disconnect_from_mqtt_broker();
                 }
+
+                setTimeout(
+                    function (e) {
+                        $("#" + "button_broker").prop("disabled", false);
+                        this.broker_button_timed = undefined;
+                    }.bind(this),
+                    500);
             }
         }.bind(this)
     );
