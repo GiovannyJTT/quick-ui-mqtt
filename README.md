@@ -17,6 +17,24 @@ The main purpose of this project is to provide a simple boilerplate for an `html
         * A `mqtt-publisher` will be created when the field `message` is present, otherwise it will create a `mqtt-subscriber`
         * If your topic doesn't receive any message as payload then just put empty string `message: ""`
 
+## App.js
+
+[App.js](./src/scripts/App.js)
+
+* This class contains all methods for creating UI elements (vertical tablist) with buttons and text that show the incoming / outgoing mqtt messages
+* Buttons of mqtt topics are initially disabled
+* Once connected to mqtt broker buttons are enabled
+* Broker colors:
+    * `Green` connected successfully to mqtt broker (using `ui_setup.json` information)
+    * `Red` disconnected successfully from mqtt broker
+    * `Yellow` reconnecting
+* Topics colors:
+    * `Green` subscribed successfully
+    * `Red` unsubscribed successfully
+    * `Yellow` published 1 message successfully
+* Text box content for each subscribed topic is updated as fast as broker sends messages
+    * Or cleaned after 1 second if not received more messages
+
 ## This repository
 
 ### NodeJS configuration
