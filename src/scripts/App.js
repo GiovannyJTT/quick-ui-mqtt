@@ -11,6 +11,7 @@ class App {
         this.add_broker_tab(this.id_list);
         this.add_broker_button_cb();
 
+        // needs ui existing already to fill the tab items
         this.add_items_to_tablist_dynamically(this.id_list);
         this.add_buttons_cb_dynamically();
         this.disable_all_buttons_of_topics();
