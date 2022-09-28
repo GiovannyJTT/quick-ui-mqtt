@@ -11,11 +11,53 @@ class App {
         this.add_broker_tab(this.id_list);
         this.add_broker_button_cb();
 
-        // needs ui existing already to fill the tab items
-        this.add_items_to_tablist_dynamically(this.id_list);
-        this.add_buttons_cb_dynamically();
-        this.disable_all_buttons_of_topics();
+        //TODO: add here ui for allowing the user to inset his url and then pass it to the method
+        const _url = "./assets/ui_setup.json";
+        this.get_ui_setup(_url);
     }
+}
+
+/**
+ * Fetches `ui_setup.json` from `url_` and attaches callback for `fail`, `done` (trigger `on_ui_setup`)
+ * @param {String} url_ 
+ */
+App.prototype.get_ui_setup = function (url_) {
+    
+    const _res = $.getJSON(url_,
+        function (data) {
+            this.ui = data;
+        }.bind(this),
+    );
+
+    _res.fail(
+        () => {
+            console.error("Could not load: " + url_);
+        }
+    );
+
+    _res.done(
+        () => {
+            console.info("Loaded: " + url_);
+            console.debug(this.ui);
+
+            this.on_ui_setup();
+        }
+    );
+}
+
+/**
+ * Assummes `this.ui` is already filled
+ * 1. Removes previous tabs (if existing)
+ * 2. Adds new tabs and filles the new items
+ * 3. Attaches buttons callbacks
+ * 4. Disables all buttons initilly
+ * @param {*} data_ 
+ */
+App.prototype.on_ui_setup = function (data_) {
+    this.remove_items_from_tablist();
+    this.add_items_to_tablist(this.id_list);
+    this.add_buttons_cb();
+    this.disable_all_buttons_of_topics();
 }
 
 /**
@@ -345,7 +387,8 @@ App.prototype.add_broker_button_cb = function () {
  *      - When publish succeeded color will blink to `green` for 100 ms
  *      - When publish failed color will blink to `red` for 100 ms
  */
-App.prototype.add_items_to_tablist_dynamically = function (parent_id_) {
+App.prototype.add_items_to_tablist = function (parent_id_) {
+    console.debug("adding new items into tablist")
 
     for (let i = 0; i < ui.items.length; i++) {
 
@@ -366,6 +409,15 @@ App.prototype.add_items_to_tablist_dynamically = function (parent_id_) {
     console.debug("added ui-items: " + ui.items.length + " to '" + parent_id_ + "'");
 }
 
+App.prototype.remove_items_from_tablist = function () {
+    console.debug("removing previous item from tablist (if existing)")
+
+    for (let i = 0; i < ui.items.length; i++) {
+        let _id_tab = "tab" + i;
+        $("#" + _id_tab).remove();
+    }
+}
+
 /**
  * Attaches `onClick` callbacks dynamically. These callbacks trigger mqtt publish / subscribe
  * 
@@ -374,7 +426,7 @@ App.prototype.add_items_to_tablist_dynamically = function (parent_id_) {
  * NOTE: when adding callbacks: if item has "message" will be created a mqtt-publisher, otherwise it will create a mqtt-subscriber
  * NOTE: one click for subscribing and one click for un-subscribing
  */
-App.prototype.add_buttons_cb_dynamically = function () {
+App.prototype.add_buttons_cb = function () {
 
     for (let i = 0; i < ui.items.length; i++) {
 
