@@ -473,12 +473,12 @@ App.prototype.add_buttons_cb = function () {
                                 setTimeout(() => {
                                     $("#" + _id_text).val("");
                                     $("#" + _id_button).prop("disabled", false);
-                                }, 1000);
+                                    _item.processing = undefined;
+                                }, 300);
 
                                 let _str = "mqtt.client.published: " + _item.topic + " " + _item.message;
                                 console.debug(_str);
 
-                                _item.processing = undefined;
                             }.bind(this)
                         );
                     }
