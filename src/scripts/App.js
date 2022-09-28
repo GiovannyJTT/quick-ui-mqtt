@@ -1,5 +1,5 @@
 import * as mqtt from 'mqtt'
-import ui from './ui_setup.json'
+import ui from '../resources/ui_setup.json'
 
 /**
  * Wraps all needed to create our UI from the `ui_setup.json` and adds publish / subscribe into the callbacks
