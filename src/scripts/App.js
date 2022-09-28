@@ -6,14 +6,13 @@ import ui from './ui_setup.json'
  */
 class App {
     constructor() {
-        // mqtt
-        this.connect_to_mqtt_broker();
+        this.id_list = this.add_tablist_group("container");
 
-        // ui
-        const _id_list = this.add_tablist_group("container");
-        this.add_broker_info_tab(_id_list);
-        this.add_items_to_tablist_dynamically(_id_list);
-        this.add_buttons_callbacks_dynamically();
+        this.add_broker_tab(this.id_list);
+        this.add_broker_button_cb();
+
+        this.add_items_to_tablist_dynamically(this.id_list);
+        this.add_buttons_cb_dynamically();
     }
 }
 
@@ -75,7 +74,8 @@ App.prototype.connect_to_mqtt_broker = function () {
 }
 
 /**
- * Removes all listeners (subscribers), closes connection to mqtt-broker and deletes mqtt-client
+ * Removes all listeners (subscribers), closes connection to mqtt-broker, deletes mqtt-client,
+ *  and disables all buttons of topics
  */
 App.prototype.disconnect_from_mqtt_broker = function () {
     console.debug("mqtt.client: explicitly disconnecting from broker")
@@ -83,12 +83,25 @@ App.prototype.disconnect_from_mqtt_broker = function () {
     this.client.end(true);
     this.on_disconnected();
     this.client = undefined;
-}
 
+    for (let i = 0; i < ui.items.length; i++) {
+        let _id_button = "button" + i;
+        $("#" + _id_button).prop("disabled", true);
+    }
+} 
+
+/**
+ * Changes badge status to `Connected`, button to `Disconnect and enables all buttons of topics
+ */
 App.prototype.on_connected = function () {
     const _id_badge = "badge_broker";
     $("#" + _id_badge).text("Connected");
     $("#" + _id_badge).attr("class", "badge badge-light bg-success");
+
+    for (let i = 0; i < ui.items.length; i++) {
+        let _id_button = "button" + i;
+        $("#" + _id_button).prop("disabled", false);
+    }
 }
 
 App.prototype.on_disconnected = function () {
@@ -113,7 +126,7 @@ App.prototype.on_reconnecting = function () {
         setTimeout(() => {
             if (!this.client.connected) {
                 $("#" + _id_badge).text("Status");
-                $("#" + _id_badge).attr("class", "badge badge-light bg-secondary");    
+                $("#" + _id_badge).attr("class", "badge badge-light bg-secondary");
             }
 
             this.reconect_timed = undefined;
@@ -249,16 +262,16 @@ App.prototype.add_textarea = function (parent_id_, sufix_, topic_) {
     return _id;
 }
 
-App.prototype.add_broker_info_tab = function (parent_id_) {
+App.prototype.add_broker_tab = function (parent_id_) {
     const _sufix = "_broker";
-    
+
     const _id_tab = this.add_tab(parent_id_, _sufix);
     const _id_row = this.add_row(_id_tab, _sufix);
     const _id_col1 = this.add_col(_id_row, _sufix, 1);
     const _id_col2 = this.add_col(_id_row, _sufix, 2);
 
     // add button to col1
-    const _id_button = this.add_button(_id_col1, _sufix, "Connect");
+    const _id_button = this.add_button(_id_col1, _sufix, "Connect / Disconnect");
 
     // add badge to button. Badge value will be updated `on_connected`, `on_reconnect`
     const _id_badge = this.add_badge(_id_button, _sufix);
@@ -275,6 +288,34 @@ App.prototype.add_broker_info_tab = function (parent_id_) {
     const _content = _url + "\n" + _options_str;
 
     const _id_text_config = this.add_textarea(_id_col2, _sufix + "_config", _content);
+}
+
+App.prototype.add_broker_button_cb = function () {
+    const _id_button = "button_broker";
+
+    $("#" + _id_button).on("click",
+        function (e) {
+            // avoid burst of clicks
+            if (undefined === this.broker_button_timed) {
+                this.broker_button_timed = true;
+                $("#" + _id_button).prop("disabled", true);
+
+                setTimeout(
+                    function (e) {
+                        $("#" + "button_broker").prop("disabled", false);
+                        this.broker_button_timed = undefined;
+                    }.bind(this),
+                    500);
+
+                if (undefined === this.client) {
+                    this.connect_to_mqtt_broker();
+                }
+                else {
+                    this.disconnect_from_mqtt_broker();
+                }
+            }
+        }.bind(this)
+    );
 }
 
 /**
@@ -321,7 +362,7 @@ App.prototype.add_items_to_tablist_dynamically = function (parent_id_) {
  * NOTE: when adding callbacks: if item has "message" will be created a mqtt-publisher, otherwise it will create a mqtt-subscriber
  * NOTE: one click for subscribing and one click for un-subscribing
  */
-App.prototype.add_buttons_callbacks_dynamically = function () {
+App.prototype.add_buttons_cb_dynamically = function () {
 
     for (let i = 0; i < ui.items.length; i++) {
 
@@ -336,7 +377,7 @@ App.prototype.add_buttons_callbacks_dynamically = function () {
                 function (e) {
                     console.debug(_id_button + " onClick");
 
-                    if (!this.client.connected) {
+                    if (undefined === this.client || !this.client.connected) {
                         console.error("Not connected to broker");
                         return;
                     }
@@ -376,7 +417,7 @@ App.prototype.add_buttons_callbacks_dynamically = function () {
                 function (e) {
                     console.debug(_id_button + " onClick");
 
-                    if (!this.client.connected) {
+                    if (undefined === this.client || !this.client.connected) {
                         console.error("Not connected to broker");
                         return;
                     }
