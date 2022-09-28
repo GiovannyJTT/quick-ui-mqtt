@@ -3,6 +3,7 @@
 The main purpose of this project is to provide a simple boilerplate for an `html UI` that helps to use `mqtt publish / subscribe` on background
 
 * Use the example of pub / sub buttons and add your own behaviours to the `onClick` events
+* Use the json file to quickly create dynamically buttons for publish / subscribe to mqtt topics
 
 ## ui_setup.json
 
