@@ -11,7 +11,8 @@ class App {
         this.add_broker_button_cb();
 
         //TODO: add here ui for allowing the user to inset his url and then pass it to the method
-        const _url = "./assets/ui_setup.json";
+        // const _url = "./assets/ui_setup.json";
+        const _url = "file://localhost/home/Downloads/ui_setup.json";
         this.get_ui_setup(_url);
     }
 }
@@ -30,7 +31,9 @@ App.prototype.get_ui_setup = function (url_) {
 
     _res.fail(
         () => {
-            console.error("Could not load: " + url_);
+            const _err = "Could not load: " + url_;
+            console.error(_err);
+            $("#" + "text_broker_config").val(_err);
         }
     );
 
@@ -66,6 +69,11 @@ App.prototype.on_ui_setup = function () {
  * https://www.cloudamqp.com/docs/nodejs_mqtt.html
  */
 App.prototype.connect_to_mqtt_broker = function () {
+    if (undefined === this.ui) {
+        console.error("'this.ui' is undefined. Connection to mqtt-broker not done.")
+        return;
+    }
+
     const _url = "mqtt://" + this.ui.mqtt_broker.host + ":" + this.ui.mqtt_broker.port;
     this.client = mqtt.connect(_url, this.ui.mqtt_broker.options);
 
