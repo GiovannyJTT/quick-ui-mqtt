@@ -11,19 +11,32 @@ class App {
         this.add_broker_button_cb();
 
         //TODO: add here ui for allowing the user to inset his url and then pass it to the method
-        // const _url = "./assets/ui_setup.json";
-        const _url = "file://localhost/home/Downloads/ui_setup.json";
-        this.get_ui_setup(_url);
+        this.ui_json_url = "./assets/ui_setup.json";
+        // this.ui_json_url = "file://localhost/home/Downloads/ui_setup.json";
+        this.get_ui_setup();
     }
 }
 
 /**
- * Fetches `ui_setup.json` from `url_` and attaches callback for `fail`, `done` (trigger `on_ui_setup`)
- * @param {String} url_ 
+ * Fetches `ui_setup.json` from `this.setup_file_url` and attaches callback for `fail`, `done` (trigger `on_ui_setup`)
  */
-App.prototype.get_ui_setup = function (url_) {
+App.prototype.get_ui_setup = function () {
+    if (this.ui_json_url.startsWith("file://")) {
+        console.debug("get_ui_setup: loading local json-file: " + this.ui_json_url);
+    }
+    else {
+        if (this.ui_json_url.startsWith("http:/")) {
+            console.debug("get_ui_setup: loading external json-file: " + this.ui_json_url);
+        }
+        else {
+            console.debug("get_ui_setup: loading server-internal json-file: " + this.ui_json_url);
+        }
+        this.get_json_from_url();
+    }
+}
 
-    const _res = $.getJSON(url_,
+App.prototype.get_json_from_url = function () {
+    const _res = $.getJSON(this.ui_json_url,
         function (data) {
             this.ui = data;
         }.bind(this),
@@ -31,15 +44,16 @@ App.prototype.get_ui_setup = function (url_) {
 
     _res.fail(
         () => {
-            const _err = "Could not load: " + url_;
+            const _err = "Could not load: " + this.ui_json_url;
             console.error(_err);
+            
             $("#" + "text_broker_config").val(_err);
         }
     );
 
     _res.done(
         () => {
-            console.info("Loaded: " + url_);
+            console.info("Loaded: " + this.ui_json_url);
             console.debug(this.ui);
 
             this.on_ui_setup();
@@ -56,9 +70,14 @@ App.prototype.get_ui_setup = function (url_) {
  */
 App.prototype.on_ui_setup = function () {
     this.remove_items_from_tablist();
-    this.add_items_to_tablist(this.id_list);
-    this.add_buttons_cb();
-    this.disable_all_buttons_of_topics();
+
+    if (this.check_uisetup_format()) {
+        this.add_items_to_tablist(this.id_list);
+        this.add_buttons_cb();
+        this.disable_all_buttons_of_topics();
+    } else {
+        $("#" + "text_broker_config").val("Wrong format: " + this.ui_json_url);
+    }
 }
 
 /**
@@ -247,20 +266,62 @@ App.prototype.on_message_received = function (topic_, message_, packet_) {
     }
 }
 
-App.prototype.check_item_fields = function (item_) {
+App.prototype.check_item_fields = function (item_, i) {
     if (undefined === item_.topic) {
-        console.error("item " + i + " has no 'topic': " + JSON.stringify(item_) + ". Aborting");
+        console.error("check_item_fields: item " + i + " has no 'topic': " + JSON.stringify(item_) + ". Aborting");
         return false;
     }
 
     if (undefined === item_.name) {
-        console.error("item " + i + " has no 'name': " + JSON.stringify(item_) + ". Aborting");
+        console.error("check_item_fields: item " + i + " has no 'name': " + JSON.stringify(item_) + ". Aborting");
         return false;
     }
 
     if (undefined === item_.qos) {
-        console.error("item " + i + " has no 'qos': " + JSON.stringify(item_) + ". Aborting");
+        console.error("check_item_fields: item " + i + " has no 'qos': " + JSON.stringify(item_) + ". Aborting");
         return false;
+    }
+
+    return true;
+}
+
+App.prototype.check_broker_fields = function (broker_) {
+    if (undefined === broker_.host) {
+        console.error("check_broker_fields: broker has no 'host' field");
+        return false;
+    }
+    if (undefined === broker_.port) {
+        console.error("check_broker_fields: broker has no 'port' field");
+        return false;
+    }
+    if (undefined === broker_.options) {
+        console.error("check_broker_fields: broker has no 'options' field");
+        return false;
+    }
+
+    return true;
+}
+
+App.prototype.check_uisetup_format = function () {
+    if (undefined === this.ui.mqtt_broker) {
+        console.error("check_ui_setup_format: 'ui' doesn't have 'mqtt_broker' field");
+        return false;
+    }
+
+    if (!this.check_broker_fields(this.ui.mqtt_broker)) {
+        return false;
+    }
+
+    if (undefined === this.ui.items) {
+        console.error("check_ui_setup_format: 'ui' doesn't have 'items' array");
+        return false;
+    }
+
+    for (let i = 0; i < this.ui.items.length; i++) {
+        let _item = this.ui.items[i];
+        if (!this.check_item_fields(_item, i)) {
+            return false;
+        }
     }
 
     return true;
@@ -408,11 +469,7 @@ App.prototype.add_items_to_tablist = function (parent_id_) {
     console.debug("adding new items into tablist")
 
     for (let i = 0; i < this.ui.items.length; i++) {
-
         let _item = this.ui.items[i];
-        if (!this.check_item_fields(_item)) {
-            return;
-        }
 
         let _id_tab = this.add_tab(parent_id_, i);
         let _id_row = this.add_row(_id_tab, i);
