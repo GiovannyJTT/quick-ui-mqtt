@@ -23,3 +23,6 @@ import App from './App'
 
 // start
 const app = new App();
+
+// expose object into chrome-console for accessing it while debugging
+// window.app = app;
