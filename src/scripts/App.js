@@ -1,83 +1,50 @@
 import * as mqtt from 'mqtt'
+import UI_Config from './UI_Config';
 
 /**
  * Wraps all needed to create our UI from the `ui_setup.json` and adds publish / subscribe into the callbacks
  */
 class App {
     constructor() {
-        this.id_list = this.add_tablist_group("container");
+        this.add_input_form("container");
 
+        this.id_list = this.add_tablist_group("container");
         this.add_broker_tab(this.id_list);
         this.add_broker_button_cb();
 
-        //TODO: add here ui for allowing the user to inset his url and then pass it to the method
-        this.ui_json_url = "./assets/ui_setup.json";
-        // this.ui_json_url = "file://localhost/home/Downloads/ui_setup.json";
-        this.get_ui_setup();
+        // initial config, later can be replaced when loaded file on input-form
+        const _cbs = {
+            on_done: this.on_ui_config_done,
+            on_failed: this.on_ui_config_failed
+        };
+        this.cfg = new UI_Config("./assets/ui_setup.json", _cbs);
+
+        setTimeout(function (e) {
+            this.setup_ui();
+        }.bind(this), 500);
     }
+}
+
+App.prototype.on_ui_config_done = function (e) {
+    $("#" + "text_broker_config").val(e);
+}
+
+App.prototype.on_ui_config_failed = function (error_) {
+    $("#" + "text_broker_config").val(error_);
 }
 
 /**
- * Fetches `ui_setup.json` from `this.setup_file_url` and attaches callback for `fail`, `done` (trigger `on_ui_setup`)
- */
-App.prototype.get_ui_setup = function () {
-    if (this.ui_json_url.startsWith("file://")) {
-        console.debug("get_ui_setup: loading local json-file: " + this.ui_json_url);
-    }
-    else {
-        if (this.ui_json_url.startsWith("http:/")) {
-            console.debug("get_ui_setup: loading external json-file: " + this.ui_json_url);
-        }
-        else {
-            console.debug("get_ui_setup: loading server-internal json-file: " + this.ui_json_url);
-        }
-        this.get_json_from_url();
-    }
-}
-
-App.prototype.get_json_from_url = function () {
-    const _res = $.getJSON(this.ui_json_url,
-        function (data) {
-            this.ui = data;
-        }.bind(this),
-    );
-
-    _res.fail(
-        () => {
-            const _err = "Could not load: " + this.ui_json_url;
-            console.error(_err);
-            
-            $("#" + "text_broker_config").val(_err);
-        }
-    );
-
-    _res.done(
-        () => {
-            console.info("Loaded: " + this.ui_json_url);
-            console.debug(this.ui);
-
-            this.on_ui_setup();
-        }
-    );
-}
-
-/**
- * Assummes `this.ui` is already filled
+ * Assummes `this.ui` is already filled and format is correct
  * 1. Removes previous tabs (if existing)
  * 2. Adds new tabs and filles the new items
  * 3. Attaches buttons callbacks
  * 4. Disables all buttons initilly
  */
-App.prototype.on_ui_setup = function () {
+App.prototype.setup_ui = function () {
     this.remove_items_from_tablist();
-
-    if (this.check_uisetup_format()) {
-        this.add_items_to_tablist(this.id_list);
-        this.add_buttons_cb();
-        this.disable_all_buttons_of_topics();
-    } else {
-        $("#" + "text_broker_config").val("Wrong format: " + this.ui_json_url);
-    }
+    this.add_items_to_tablist(this.id_list);
+    this.add_buttons_cb();
+    this.disable_all_buttons_of_topics();
 }
 
 /**
@@ -88,13 +55,14 @@ App.prototype.on_ui_setup = function () {
  * https://www.cloudamqp.com/docs/nodejs_mqtt.html
  */
 App.prototype.connect_to_mqtt_broker = function () {
-    if (undefined === this.ui) {
-        console.error("'this.ui' is undefined. Connection to mqtt-broker not done.")
+    if (undefined === this.cfg) {
+        console.error("'this.cfg' is undefined. Connection to mqtt-broker not done.")
         return;
     }
 
-    const _url = "mqtt://" + this.ui.mqtt_broker.host + ":" + this.ui.mqtt_broker.port;
-    this.client = mqtt.connect(_url, this.ui.mqtt_broker.options);
+    const _broker = this.cfg.ui.mqtt_broker;
+    const _url = "mqtt://" + _broker.host + ":" + _broker.port;
+    this.client = mqtt.connect(_url, _broker.options);
 
     this.set_broker_info_text();
 
@@ -145,8 +113,9 @@ App.prototype.connect_to_mqtt_broker = function () {
 }
 
 App.prototype.set_broker_info_text = function () {
-    const _url = "mqtt://" + this.ui.mqtt_broker.host + ":" + this.ui.mqtt_broker.port;
-    const _options = this.ui.mqtt_broker.options;
+    const _broker = this.cfg.ui.mqtt_broker;
+    const _url = "mqtt://" + _broker.host + ":" + _broker.port;
+    const _options = _broker.options;
     const _options_str = "clientId " + _options.clientId + "\n"
         + "keepalive " + _options.keepalive + "\n"
         + "reconnect " + _options.reconnectPeriod + "\n"
@@ -161,8 +130,7 @@ App.prototype.unset_broker_info_text = function () {
 }
 
 /**
- * Removes all listeners (subscribers), closes connection to mqtt-broker, deletes mqtt-client,
- *  and disables all buttons of topics
+ * Removes all listeners (subscribers), closes connection to mqtt-broker, deletes mqtt-client
  */
 App.prototype.disconnect_from_mqtt_broker = function () {
     console.debug("mqtt.client: explicitly disconnecting from broker")
@@ -170,20 +138,27 @@ App.prototype.disconnect_from_mqtt_broker = function () {
     this.client.end(true);
     this.on_disconnected();
     this.client = undefined;
+}
 
+/**
+ * Disconnects from mqtt broker and disables buttons of topics
+ */
+App.prototype.disconnect_and_disable = function () {
+    this.disconnect_from_mqtt_broker();
+    
     this.disable_all_buttons_of_topics();
     this.unset_broker_info_text();
 }
 
 App.prototype.disable_all_buttons_of_topics = function () {
-    for (let i = 0; i < this.ui.items.length; i++) {
+    for (let i = 0; i < this.cfg.ui.items.length; i++) {
         let _id_button = "button" + i;
         $("#" + _id_button).prop("disabled", true);
     }
 }
 
 App.prototype.enable_all_buttons_of_topics = function () {
-    for (let i = 0; i < this.ui.items.length; i++) {
+    for (let i = 0; i < this.cfg.ui.items.length; i++) {
         let _id_button = "button" + i;
         $("#" + _id_button).prop("disabled", false);
     }
@@ -237,16 +212,17 @@ App.prototype.on_reconnecting = function () {
 App.prototype.on_message_received = function (topic_, message_, packet_) {
 
     let _item = undefined;
-    for (let i = 0; i < this.ui.items.length; i++) {
-        if (topic_ == this.ui.items[i].topic) {
-            _item = this.ui.items[i];
+    const _items = this.cfg.ui.items;
+    for (let i = 0; i < _items.length; i++) {
+        if (topic_ == _items[i].topic) {
+            _item = _items[i];
             _item.index = i;
             break;
         }
     }
 
     if (undefined === _item) {
-        console.error("Topic not found in this.ui.items: " + topic_ + ". This should not happen.");
+        console.error("Topic not found in this.cfg.ui..items: " + topic_ + ". This should not happen.");
         return;
     }
 
@@ -266,65 +242,42 @@ App.prototype.on_message_received = function (topic_, message_, packet_) {
     }
 }
 
-App.prototype.check_item_fields = function (item_, i) {
-    if (undefined === item_.topic) {
-        console.error("check_item_fields: item " + i + " has no 'topic': " + JSON.stringify(item_) + ". Aborting");
-        return false;
-    }
+App.prototype.add_input_form = function (parent_id_) {
+    const _id = "input_form";
+    const _input_form = '<input id="' + _id + '" type="file" class="form-control"></input>'
+    $("#" + parent_id_).append(_input_form);
 
-    if (undefined === item_.name) {
-        console.error("check_item_fields: item " + i + " has no 'name': " + JSON.stringify(item_) + ". Aborting");
-        return false;
-    }
+    $("#" + _id).on("change",
+        function (e) {
+            console.debug(_id + ": on_change")
 
-    if (undefined === item_.qos) {
-        console.error("check_item_fields: item " + i + " has no 'qos': " + JSON.stringify(item_) + ". Aborting");
-        return false;
-    }
+            const _input = document.getElementById(_id);
+            const _file = _input.files[0];
 
-    return true;
-}
+            if (undefined === _file) {
+                console.warn("No file selected");
+            }
+            else {
+                console.debug("File selected" + _file.name);
 
-App.prototype.check_broker_fields = function (broker_) {
-    if (undefined === broker_.host) {
-        console.error("check_broker_fields: broker has no 'host' field");
-        return false;
-    }
-    if (undefined === broker_.port) {
-        console.error("check_broker_fields: broker has no 'port' field");
-        return false;
-    }
-    if (undefined === broker_.options) {
-        console.error("check_broker_fields: broker has no 'options' field");
-        return false;
-    }
+                // create new config
+                const _cbs = {
+                    on_done: this.on_ui_config_done,
+                    on_failed: this.on_ui_config_failed
+                }
+                this.cfg = new UI_Config(_file, _cbs);
 
-    return true;
-}
+                setTimeout(function (e) {
+                    this.setup_ui();
+                }.bind(this), 500);
 
-App.prototype.check_uisetup_format = function () {
-    if (undefined === this.ui.mqtt_broker) {
-        console.error("check_ui_setup_format: 'ui' doesn't have 'mqtt_broker' field");
-        return false;
-    }
+                this.reset_broker_tab();
+            }
+        }.bind(this)
+    );
 
-    if (!this.check_broker_fields(this.ui.mqtt_broker)) {
-        return false;
-    }
-
-    if (undefined === this.ui.items) {
-        console.error("check_ui_setup_format: 'ui' doesn't have 'items' array");
-        return false;
-    }
-
-    for (let i = 0; i < this.ui.items.length; i++) {
-        let _item = this.ui.items[i];
-        if (!this.check_item_fields(_item, i)) {
-            return false;
-        }
-    }
-
-    return true;
+    console.debug("added '" + _id + "' to '" + parent_id_ + "'");
+    return _id;
 }
 
 /**
@@ -423,22 +376,34 @@ App.prototype.add_broker_tab = function (parent_id_) {
     const _id_text_config = this.add_textarea(_id_col2, _sufix + "_config", "");
 }
 
+App.prototype.reset_broker_tab = function () {
+    const _button = $("#" + "button_broker");
+    _button.prop("disabled", false);
+
+    const _badge = $("#" + "badge_broker");
+    _badge.text("Status");
+    _badge.attr("class", "badge badge-light bg-secondary");
+
+    this.disconnect_from_mqtt_broker();
+}
+
 App.prototype.add_broker_button_cb = function () {
     const _id_button = "button_broker";
 
     $("#" + _id_button).on("click",
         function (e) {
+            console.debug(_id_button + ": onClick");
+
             // avoid burst of clicks
             if (undefined === this.broker_button_timed) {
                 this.broker_button_timed = true;
-
                 $("#" + _id_button).prop("disabled", true);
 
                 if (undefined === this.client) {
                     this.connect_to_mqtt_broker();
                 }
                 else {
-                    this.disconnect_from_mqtt_broker();
+                    this.disconnect_and_disable();
                 }
 
                 setTimeout(() => {
@@ -468,8 +433,9 @@ App.prototype.add_broker_button_cb = function () {
 App.prototype.add_items_to_tablist = function (parent_id_) {
     console.debug("adding new items into tablist")
 
-    for (let i = 0; i < this.ui.items.length; i++) {
-        let _item = this.ui.items[i];
+    const _items = this.cfg.ui.items;
+    for (let i = 0; i < _items.length; i++) {
+        let _item = _items[i];
 
         let _id_tab = this.add_tab(parent_id_, i);
         let _id_row = this.add_row(_id_tab, i);
@@ -480,15 +446,18 @@ App.prototype.add_items_to_tablist = function (parent_id_) {
         let _id_text = this.add_textarea(_id_col2, i, _item.topic);
     }
 
-    console.debug("added ui-items: " + this.ui.items.length + " to '" + parent_id_ + "'");
+    console.debug("added ui-items: " + _items.length + " to '" + parent_id_ + "'");
 }
 
 App.prototype.remove_items_from_tablist = function () {
     console.debug("removing previous items from tablist (if existing)")
 
-    for (let i = 0; i < this.ui.items.length; i++) {
-        let _id_tab = "tab" + i;
-        $("#" + _id_tab).remove();
+    const _children = $("#" + "list_tab").children();
+    for (let i = 0; i < _children.length; i++) {
+        let _c = _children[i]
+        if ("tab_broker" != _c.id) {
+            _c.remove();
+        }
     }
 }
 
@@ -502,9 +471,9 @@ App.prototype.remove_items_from_tablist = function () {
  */
 App.prototype.add_buttons_cb = function () {
 
-    for (let i = 0; i < this.ui.items.length; i++) {
+    for (let i = 0; i < this.cfg.ui.items.length; i++) {
 
-        let _item = this.ui.items[i];
+        let _item = this.cfg.ui.items[i];
         let _id_button = 'button' + i;
         let _id_badge = "badge" + i;
         let _id_text = "text" + i;
@@ -597,7 +566,7 @@ App.prototype.add_buttons_cb = function () {
         }
     }
 
-    console.debug("added ui-items callbacks: " + this.ui.items.length);
+    console.debug("added ui-items callbacks: " + this.cfg.ui.items.length);
 }
 
 export default App
