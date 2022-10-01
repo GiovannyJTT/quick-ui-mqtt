@@ -7,7 +7,7 @@ The main purpose of this project is to provide a simple boilerplate for an `html
 
 ## ui_setup.json
 
-[ui_setup.json](./src/scripts/ui_setup.json)
+[ui_setup.json](./src/resources/ui_setup.json)
 
 * Define a the configuration of the mqtt-broker to use (url, port, options)
 * Define a list of items (button-name, mqtt-topic, message, qos)
@@ -35,6 +35,13 @@ The main purpose of this project is to provide a simple boilerplate for an `html
     * `Yellow` published 1 message successfully
 * Text box content for each subscribed topic is updated as fast as broker sends messages
     * Or cleaned after 1 second if not received more messages
+
+## UI_Config.js
+
+[UI_Config.js](./src/scripts/UI_Config.js)
+
+* This class handles the loading of the UI configuration
+* Load can be done from url, server-side file or client-side file
 
 ## This repository
 
