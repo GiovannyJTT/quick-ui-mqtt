@@ -21,7 +21,7 @@ class App {
 
         setTimeout(function (e) {
             this.setup_ui();
-        }.bind(this), 500);
+        }.bind(this), 1000);
     }
 }
 
@@ -269,9 +269,10 @@ App.prototype.add_input_form = function (parent_id_) {
 
                 setTimeout(function (e) {
                     this.setup_ui();
-                }.bind(this), 500);
+                }.bind(this), 1000);
 
                 this.reset_broker_tab();
+                this.disconnect_from_mqtt_broker();
             }
         }.bind(this)
     );
@@ -383,8 +384,6 @@ App.prototype.reset_broker_tab = function () {
     const _badge = $("#" + "badge_broker");
     _badge.text("Status");
     _badge.attr("class", "badge badge-light bg-secondary");
-
-    this.disconnect_from_mqtt_broker();
 }
 
 App.prototype.add_broker_button_cb = function () {
@@ -449,6 +448,9 @@ App.prototype.add_items_to_tablist = function (parent_id_) {
     console.debug("added ui-items: " + _items.length + " to '" + parent_id_ + "'");
 }
 
+/**
+ * Removes all tabs except `tab_broker`
+ */
 App.prototype.remove_items_from_tablist = function () {
     console.debug("removing previous items from tablist (if existing)")
 
