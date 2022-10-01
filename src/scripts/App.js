@@ -133,11 +133,12 @@ App.prototype.unset_broker_info_text = function () {
  * Removes all listeners (subscribers), closes connection to mqtt-broker, deletes mqtt-client
  */
 App.prototype.disconnect_from_mqtt_broker = function () {
-    console.debug("mqtt.client: explicitly disconnecting from broker")
-
-    this.client.end(true);
-    this.on_disconnected();
-    this.client = undefined;
+    if (undefined !== this.client) {
+        console.debug("mqtt.client: explicitly disconnecting from broker")    
+        this.client.end(true);
+        this.on_disconnected();
+        this.client = undefined;
+    }
 }
 
 /**
