@@ -192,15 +192,17 @@ App.prototype.on_reconnecting = function () {
     $("#" + _id_badge).text("Reconnecting");
     $("#" + _id_badge).attr("class", "badge badge-light bg-warning");
 
-    if (undefined === this.reconnect_timed) {
-        this.reconect_timed = true;
+    if (undefined !== this.broker_button_timed) {
+        clearTimeout(this.broker_button_timed);
+    }
 
-        setTimeout(() => {
+    if (undefined === this.reconnect_timed) {
+        this.reconect_timed = setTimeout(() => {
             if (!this.client.connected) {
                 $("#" + _id_badge).text("Status");
                 $("#" + _id_badge).attr("class", "badge badge-light bg-secondary");
-            }
-
+            }                
+        
             this.reconect_timed = undefined;
         }, 500);
         // less than 1000 defined as reconnectTimeout
@@ -394,9 +396,12 @@ App.prototype.add_broker_button_cb = function () {
         function (e) {
             console.debug(_id_button + ": onClick");
 
+            if (undefined !== this.reconect_timed) {
+                clearTimeout(this.reconect_timed);
+            }
+
             // avoid burst of clicks
             if (undefined === this.broker_button_timed) {
-                this.broker_button_timed = true;
                 $("#" + _id_button).prop("disabled", true);
 
                 if (undefined === this.client) {
@@ -406,8 +411,9 @@ App.prototype.add_broker_button_cb = function () {
                     this.disconnect_and_disable();
                 }
 
-                setTimeout(() => {
+                this.broker_button_timed = setTimeout(() => {
                     $("#" + "button_broker").prop("disabled", false);
+
                     this.broker_button_timed = undefined;
                 }, 500);
             }
