@@ -20,7 +20,7 @@ class UI_Config {
 }
 
 UI_Config.prototype.is_file = function (object_) {
-    if (typeof object_ == "string") {
+    if (this.is_string(object_)) {
         // is url
         return false;
     }
@@ -30,8 +30,12 @@ UI_Config.prototype.is_file = function (object_) {
     }
 }
 
+UI_Config.prototype.is_string = function (object_) {
+    return (typeof object_ == "string");
+}
+
 /**
- * Checks if it is a 'file' or an 'Url'
+ * Checks if it is a 'file' or an 'Url' (string)
  * Url (can be on server-side or on client-local-side)
  */
  UI_Config.prototype.get_ui_config = function () {
@@ -39,7 +43,7 @@ UI_Config.prototype.is_file = function (object_) {
         console.debug("get_ui_config: loading client-side json-file: " + this.file_or_url.name);
         this.get_json_from_local();
     }
-    else {
+    else if (this.is_string(this.file_or_url)) {
         if (this.file_or_url.startsWith("http:/")) {
             console.debug("get_ui_config: loading external json-file: " + this.file_or_url);
         }
@@ -47,6 +51,9 @@ UI_Config.prototype.is_file = function (object_) {
             console.debug("get_ui_config: loading server-side json-file: " + this.file_or_url);
         }
         this.get_json_from_url();
+    }
+    else {
+        console.error("get_ui_config: unhandled type of: " + this.file_or_url);
     }
 }
 
