@@ -1,6 +1,7 @@
 
 /**
  * Wraps all methods needed to get the ui_setup in a json structure
+ * 
  * It will be loaded either from url, server-side file or client-side file
  */
 class UI_Config {
@@ -11,11 +12,11 @@ class UI_Config {
             return;
         }
 
-        this.ui = undefined;
+        this.data = undefined;
         this.on_done = callbacks_["on_done"];
         this.on_failed = callbacks_["on_failed"];
 
-        this.get_ui_config();
+        this.get_config();
     }
 }
 
@@ -35,31 +36,33 @@ UI_Config.prototype.is_string = function (object_) {
 }
 
 /**
- * Checks if it is a 'file' or an 'Url' (string)
- * Url (can be on server-side or on client-local-side)
+ * Checks if it is a `File` or an `URL` (string)
+ * 
+ * `URL` (can be on server-side or on client-local-side)
  */
- UI_Config.prototype.get_ui_config = function () {
+ UI_Config.prototype.JSON.stringify(e) = function () {
     if (this.is_file(this.file_or_url)) {
-        console.debug("get_ui_config: loading client-side json-file: " + this.file_or_url.name);
+        console.debug("UI_Config: loading client-side json-file: " + this.file_or_url.name);
         this.get_json_from_local();
     }
     else if (this.is_string(this.file_or_url)) {
         if (this.file_or_url.startsWith("http:/")) {
-            console.debug("get_ui_config: loading external json-file: " + this.file_or_url);
+            console.debug("UI_Config: loading external json-file: " + this.file_or_url);
         }
         else {
-            console.debug("get_ui_config: loading server-side json-file: " + this.file_or_url);
+            console.debug("UI_Config: loading server-side json-file: " + this.file_or_url);
         }
         this.get_json_from_url();
     }
     else {
-        console.error("get_ui_config: unhandled type of: " + this.file_or_url);
+        console.error("UI_Config: unhandled type of: " + this.file_or_url);
     }
 }
 
 /**
- * Fetches `json text content` from `this.ui_json_url` and attaches callback for `fail`, `done` (trigger `on_ui_setup`)
- * Creates `this.ui` object
+ * Fetches `json text content` from `this.file_or_url` and attaches callback for `fail`, `done`
+ * 
+ * Creates `this.data` object
  */
 UI_Config.prototype.get_json_from_url = function () {
     const _res = $.getJSON(this.file_or_url,
@@ -93,18 +96,20 @@ UI_Config.prototype.get_json_from_url = function () {
 }
 
 /**
- * It assumes `this.file_or_url` is of type `File`
- * Reads client-side file
- * Creates `this.ui` object
+ * 1. It assumes `this.file_or_url` is of type `File`
+ * 2. Reads client-side file
+ * 3. Creates `this.ui` object
  */
 UI_Config.prototype.get_json_from_local = function () {
+    
     const _f = this.file_or_url;
     const _fr = new FileReader();
 
     _fr.onload = function(e) {
+
         const _raw = e.target.result;
-        this.ui = JSON.parse(_raw);
-        console.debug(this.ui);
+        this.data = JSON.parse(_raw);
+        console.debug(this.data);
 
         if (this.check_format()) {
             // to be shown on UI
@@ -118,8 +123,8 @@ UI_Config.prototype.get_json_from_local = function () {
 
     _fr.addEventListener("error",
         function (e) {
-            console.debug("Load error: " + e);
-            this.on_failed("Load error: " + e);
+            console.debug("Load error: " + JSON.stringify(e));
+            this.on_failed("Load error: " + JSON.stringify(e));
         }.bind(this)
     );
 
@@ -175,27 +180,27 @@ UI_Config.prototype.check_broker_fields = function (broker_) {
 }
 
 UI_Config.prototype.check_format = function () {
-    if (undefined == this.ui) {
+    if (undefined == this.data) {
         console.error("check_format: 'ui' is undefined");
         return false;
     }
 
-    if (undefined === this.ui.mqtt_broker) {
+    if (undefined === this.data.mqtt_broker) {
         console.error("check_format: 'ui' doesn't have 'mqtt_broker' field");
         return false;
     }
 
-    if (!this.check_broker_fields(this.ui.mqtt_broker)) {
+    if (!this.check_broker_fields(this.data.mqtt_broker)) {
         return false;
     }
 
-    if (undefined === this.ui.items) {
+    if (undefined === this.data.items) {
         console.error("check_format: 'ui' doesn't have 'items' array");
         return false;
     }
 
-    for (let i = 0; i < this.ui.items.length; i++) {
-        let _item = this.ui.items[i];
+    for (let i = 0; i < this.data.items.length; i++) {
+        let _item = this.data.items[i];
         if (!this.check_item_fields(_item, i)) {
             return false;
         }
@@ -205,8 +210,10 @@ UI_Config.prototype.check_format = function () {
 }
 
 UI_Config.prototype.get_item_from_topic = function (topic_) {
+    
     let _item = undefined;
-    const _items = this.cfg.ui.items;
+    const _items = this.data.items;
+
     for (let i = 0; i < _items.length; i++) {
         if (topic_ == _items[i].topic) {
             _item = _items[i];
