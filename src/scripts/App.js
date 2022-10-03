@@ -395,7 +395,7 @@ App.prototype.on_reconnecting = function () {
  */
 App.prototype.on_message_received = function (topic_, message_, packet_) {
 
-    const _item = this.get_item_from_topic(topic_);
+    const _item = this.cfg.get_item_from_topic(topic_);
     if (undefined === _item) {
         console.error("Topic not found: " + topic_ + ". This should not happen.");
         return;
@@ -415,20 +415,6 @@ App.prototype.on_message_received = function (topic_, message_, packet_) {
             this.message_timed = undefined;
         }, 1000);
     }
-}
-
-App.prototype.get_item_from_topic = function (topic_) {
-    let _item = undefined;
-    const _items = this.cfg.ui.items;
-    for (let i = 0; i < _items.length; i++) {
-        if (topic_ == _items[i].topic) {
-            _item = _items[i];
-            _item.index = i;
-            break;
-        }
-    }
-
-    return _item;
 }
 
 /**

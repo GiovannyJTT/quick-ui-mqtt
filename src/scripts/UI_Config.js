@@ -204,4 +204,18 @@ UI_Config.prototype.check_format = function () {
     return true;
 }
 
+UI_Config.prototype.get_item_from_topic = function (topic_) {
+    let _item = undefined;
+    const _items = this.cfg.ui.items;
+    for (let i = 0; i < _items.length; i++) {
+        if (topic_ == _items[i].topic) {
+            _item = _items[i];
+            _item.index = i;
+            break;
+        }
+    }
+
+    return _item;
+}
+
 export default UI_Config;
