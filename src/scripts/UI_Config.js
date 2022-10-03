@@ -40,7 +40,7 @@ UI_Config.prototype.is_string = function (object_) {
  * 
  * `URL` (can be on server-side or on client-local-side)
  */
- UI_Config.prototype.JSON.stringify(e) = function () {
+ UI_Config.prototype.get_config = function () {
     if (this.is_file(this.file_or_url)) {
         console.debug("UI_Config: loading client-side json-file: " + this.file_or_url.name);
         this.get_json_from_local();
