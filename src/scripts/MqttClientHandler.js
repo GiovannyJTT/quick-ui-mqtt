@@ -90,6 +90,36 @@ class MqttClientHandler {
     );
 }
 
+MqttClientHandler.prototype.publish = function (item_, on_published_) {
+    this.client.publish(item_.topic, item_.message, { qos: item_.qos, retain: false },
+        function (e) {
+            const _str = "mqtt.client.published: " + item_.topic + " " + item_.message;
+            console.debug(_str);
+            on_published_();
+        }
+    );
+}
+
+MqttClientHandler.prototype.subscribe = function (item_, on_subscribed_) {
+    this.client.subscribe(item_.topic, { qos: item_.qos, retain: false },
+        function (e) {
+            const _str = "mqtt.client.subscribed: " + item_.topic;
+            console.debug(_str);
+            on_subscribed_();
+        }
+    );
+}
+
+MqttClientHandler.prototype.unsubscribe = function (item_, on_unsubscribed_) {
+    this.client.unsubscribe(item_.topic,
+        function (e) {
+            const _str = "mqtt.client.unsubscribed: " + item_.topic;
+            console.debug(_str);
+            on_unsubscribed_();
+        }
+    );
+}
+
 /**
  * Removes all listeners (subscribers), closes connection to mqtt-broker, deletes mqtt-client
  */

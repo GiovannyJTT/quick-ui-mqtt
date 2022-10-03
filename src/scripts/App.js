@@ -239,26 +239,23 @@ App.prototype.add_buttons_cb = function () {
                     if (undefined === _item.processing) {
                         _item.processing = true;
 
-                        this.mqtt_h.client.publish(_item.topic, _item.message, { qos: _item.qos, retain: false },
-                            function (e) {
-                                $("#" + _id_badge).attr("class", "badge badge-light bg-warning");
-                                $("#" + _id_text).val(_item.message);
-                                $("#" + _id_button).prop("disabled", true);
+                        const _on_published = function (e) {
+                            $("#" + _id_badge).attr("class", "badge badge-light bg-warning");
+                            $("#" + _id_text).val(_item.message);
+                            $("#" + _id_button).prop("disabled", true);
 
-                                let _str = "mqtt.client.published: " + _item.topic + " " + _item.message;
-                                console.debug(_str);
+                            setTimeout(() => {
+                                $("#" + _id_badge).attr("class", "badge badge-light bg-secondary");
+                            }, 100);
 
-                                setTimeout(() => {
-                                    $("#" + _id_badge).attr("class", "badge badge-light bg-secondary");
-                                }, 100);
+                            setTimeout(() => {
+                                $("#" + _id_text).val("");
+                                $("#" + _id_button).prop("disabled", false);
+                                _item.processing = undefined;
+                            }, 300);
+                        }.bind(this);
 
-                                setTimeout(() => {
-                                    $("#" + _id_text).val("");
-                                    $("#" + _id_button).prop("disabled", false);
-                                    _item.processing = undefined;
-                                }, 300);
-                            }.bind(this)
-                        );
+                        this.mqtt_h.publish(_item, _on_published)
                     }
                 }.bind(this)
             );
@@ -279,32 +276,28 @@ App.prototype.add_buttons_cb = function () {
                         _item.processing = true;
 
                         if (undefined === _item.subscribed) {
-                            this.mqtt_h.client.subscribe(_item.topic, { qos: _item.qos, retain: false },
-                                function (e) {
-                                    $("#" + _id_badge).attr("class", "badge badge-light bg-success");
 
-                                    let _str = "mqtt.client.subscribed: " + _item.topic;
-                                    console.debug(_str);
+                            const _on_subscribed = function (e) {
+                                $("#" + _id_badge).attr("class", "badge badge-light bg-success");
 
-                                    // set "sub" flag
-                                    _item.subscribed = true;
-                                    _item.processing = undefined;
-                                }.bind(this)
-                            );
+                                // set "sub" flag
+                                _item.subscribed = true;
+                                _item.processing = undefined;                                
+                            }.bind(this);
+
+                            this.mqtt_h.subscribe(_item, _on_subscribed);
                         }
                         else {
-                            this.mqtt_h.client.unsubscribe(_item.topic,
-                                function (e) {
-                                    $("#" + _id_badge).attr("class", "badge badge-light bg-danger");
 
-                                    let _str = "mqtt.client.unsubscribed: " + _item.topic;
-                                    console.debug(_str);
+                            const _on_unsubscribed = function (e) {
+                                $("#" + _id_badge).attr("class", "badge badge-light bg-danger");
 
-                                    // un-set "sub" flag
-                                    _item.subscribed = undefined;
-                                    _item.processing = undefined;
-                                }.bind(this)
-                            );
+                                // un-set "sub" flag
+                                _item.subscribed = undefined;
+                                _item.processing = undefined;
+                            }.bind(this);
+
+                            this.mqtt_h.unsubscribe(_item, _on_unsubscribed)
                         }
                     }
                 }.bind(this)
