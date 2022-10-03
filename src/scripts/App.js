@@ -14,19 +14,17 @@ class App {
 
         // initial config, later can be replaced when loaded file on input-form
         const _cbs = {
-            on_done: this.on_ui_config_done,
-            on_failed: this.on_ui_config_failed
+            on_done: this.on_ui_config_done.bind(this),
+            on_failed: this.on_ui_config_failed.bind(this)
         };
         this.cfg = new UI_Config("./assets/ui_setup.json", _cbs);
-
-        setTimeout(function (e) {
-            this.setup_ui();
-        }.bind(this), 1000);
     }
 }
 
 App.prototype.on_ui_config_done = function (e) {
     $("#" + "text_broker_config").val(e);
+
+    this.setup_ui();
 }
 
 App.prototype.on_ui_config_failed = function (error_) {
@@ -265,14 +263,10 @@ App.prototype.add_input_form = function (parent_id_) {
 
                 // create new config
                 const _cbs = {
-                    on_done: this.on_ui_config_done,
-                    on_failed: this.on_ui_config_failed
+                    on_done: this.on_ui_config_done.bind(this),
+                    on_failed: this.on_ui_config_failed.bind(this)
                 }
                 this.cfg = new UI_Config(_file, _cbs);
-
-                setTimeout(function (e) {
-                    this.setup_ui();
-                }.bind(this), 1000);
 
                 this.reset_broker_tab();
                 this.disconnect_from_mqtt_broker();
