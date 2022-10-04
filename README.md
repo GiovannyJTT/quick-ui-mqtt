@@ -1,5 +1,10 @@
 # quick-ui-mqtt
 
+* App is running at: [github-pages-quick-ui-mqtt](https://giovannyjtt.github.io/quick-ui-mqtt/)
+* [Video demo link](https://studio.youtube.com/video/gMjwMOx3K3g/edit)
+
+![quick_ui_mqtt_gif](./docs/quick_ui_mqtt_gif.gif)
+
 The main purpose of this project is to provide a simple boilerplate for an `html UI` that helps to use `mqtt publish / subscribe` on background
 
 * Use the example of pub / sub buttons and add your own behaviours to the `onClick` events
@@ -39,7 +44,7 @@ The main purpose of this project is to provide a simple boilerplate for an `html
 
 [UI.js](./src/scripts/UI.js)
 
-* This class contains all methods for creating UI elements (vertical `tab-list`) with `buttons`, `badge` (color blink) and `text` )that show the incoming / outgoing mqtt messages)
+* This class contains all methods for creating UI elements (vertical `tab-list`) with `buttons`, `badge` (color blink) and `text` (that shows the incoming / outgoing mqtt messages)
 * Buttons of mqtt topics are initially disabled
 * Once connected to mqtt broker buttons are enabled
 * Broker colors:
