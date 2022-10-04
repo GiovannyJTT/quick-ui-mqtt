@@ -5,12 +5,13 @@ The main purpose of this project is to provide a simple boilerplate for an `html
 * Use the example of pub / sub buttons and add your own behaviours to the `onClick` events
 * Use the json file to quickly create dynamically buttons for publish / subscribe to mqtt topics
 
-## ui_setup.json
+## Classes
+### ui_setup.json (Example)
 
 [ui_setup.json](./src/resources/ui_setup.json)
 
-* Define a the configuration of the mqtt-broker to use (url, port, options)
-* Define a list of items (button-name, mqtt-topic, message, qos)
+* Defines the configuration of the mqtt-broker to use (url, port, options)
+* Defines a list of items (button-name, mqtt-topic, message, qos)
     * `name` (madatory, string) it will appear into the button
     * `topic` (mandatory, string) it will be used to publish or subscribe to / from mqtt-broker
     * `qos` (mandatory, number [0,1,2]) it will be used for quality of service into the mqtt with that specific topic
@@ -18,11 +19,27 @@ The main purpose of this project is to provide a simple boilerplate for an `html
         * A `mqtt-publisher` will be created when the field `message` is present, otherwise it will create a `mqtt-subscriber`
         * If your publish-topic doesn't have any message as payload then just put empty string `message: ""` to tell the App this is a publisher
 
-## App.js
+### Config.js
+
+[Config.js](./src/scripts/Config.js)
+
+* This class handles the loading of the UI configuration (from json file as described above)
+* Load can be done from url, server-side file or client-side file
+
+### App.js
 
 [App.js](./src/scripts/App.js)
 
-* This class contains all methods for creating UI elements (vertical tablist) with buttons and text that show the incoming / outgoing mqtt messages
+* This class creates instance of `MqttClientHandler` and `UI` and performs cross-instance operations between then
+* Attaches callbacks for `broker_button` and `input_form`, which are the basic 2 UI elements needed to load / change the configuration at `runtime`
+* Attaches callbacks to manage mqtt and UI related when:
+    * `on_connected`, `on_disconnected`, `on_reconnecting`, on `on_message_received`, etc
+
+### UI.js
+
+[UI.js](./src/scripts/UI.js)
+
+* This class contains all methods for creating UI elements (vertical `tab-list`) with `buttons`, `badge` (color blink) and `text` )that show the incoming / outgoing mqtt messages)
 * Buttons of mqtt topics are initially disabled
 * Once connected to mqtt broker buttons are enabled
 * Broker colors:
@@ -35,13 +52,19 @@ The main purpose of this project is to provide a simple boilerplate for an `html
     * `Yellow` published 1 message successfully
 * Text box content for each subscribed topic is updated as fast as broker sends messages
     * Or cleaned after 1 second if not received more messages
+* At `add_buttons_cb()` the callback for each button is created and attached to the button
+    * Depending on the topic it will add functionality for: `publish`, `subscribe` or `unsubscribe`
 
-## UI_Config.js
+### main.js
 
-[UI_Config.js](./src/scripts/UI_Config.js)
+[main.js](./src/scripts/main.js)
 
-* This class handles the loading of the UI configuration
-* Load can be done from url, server-side file or client-side file
+* It is the entry point of our App:
+    1. Loads bootstrap js
+    2. Loads boostrap predefined css colors and styles
+    3. Bootstrap depends on jquery. jquery-global-var `$` can be used only after the page is fully loaded
+        * So we need to instanciate it
+    4. Finally it creates an instance of our App
 
 ## This repository
 
