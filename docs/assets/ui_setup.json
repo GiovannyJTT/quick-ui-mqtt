@@ -1,0 +1,54 @@
+{
+    "description": "define mqtt broker details (local IP 192.168.1.X to contact mosquitto), define list of items to be shown into the UI",
+    "mqtt_broker": {
+        "host": "localhost",
+        "port": "9001",
+        "options": {
+            "clientId": "mqtt_client_01",
+            "connectTimeout": 4000,
+            "reconnectPeriod": 1000,
+            "keepalive": 60,
+            "clean": true,
+            "username": "tfm",
+            "password": "pass"
+        }
+    },
+    "items": [
+        {
+            "name": "Increase AC temp",
+            "topic": "/converter/set_temperature",
+            "message": "+1", 
+            "qos": 2
+        },
+        {
+            "name": "Decrease AC temp",
+            "topic": "/converter/set_temperature",
+            "message": "-1",
+            "qos": 2
+        },
+        {
+            "name": "Room temperature",
+            "topic": "/converter/temperature",
+            "qos": 2,
+            "description": "Temperature sensor"
+        },
+        {
+            "name": "Start air extractor",
+            "topic": "/converter/set_extractor",
+            "message": "100",
+            "qos": 2
+        },
+        {
+            "name": "Stop air extractor",
+            "topic": "/converter/set_extractor",
+            "message": "0",
+            "qos": 2
+        },
+        {
+            "name": "Room smoke",
+            "topic": "/converter/smoke",
+            "qos": 2,
+            "description": "Smoke sensor"
+        }
+    ]
+}
