@@ -58,9 +58,9 @@ UI.prototype.add_broker_tab = function (parent_id_) {
     $("#" + _id_badge).text("Status");
     $("#" + _id_badge).attr("class", "badge badge-light bg-secondary");
 
-    // add text_config to col2
-    // it will be filled when connect_to_mqtt_broker
-    const _id_text_config = this.add_textarea(_id_col2, _sufix + "_config", "");
+    // add text to col2
+    // it will reflect broker status (loaded, wrong format) or broker info when connected (host, port, etc)
+    const _id_text = this.add_textarea(_id_col2, _sufix, "");
 }
 
 UI.prototype.add_broker_button_cb = function (cb_) {
@@ -278,6 +278,8 @@ UI.prototype.add_buttons_cb = function (data_, mqtt_h_) {
     console.debug("added ui-items callbacks: " + _items.length);
 }
 
+// update elements
+
 UI.prototype.set_broker_info_text = function (data_) {
     const _broker = data_.mqtt_broker;
     const _url = "mqtt://" + _broker.host + ":" + _broker.port;
@@ -288,11 +290,39 @@ UI.prototype.set_broker_info_text = function (data_) {
         + "connectTimeout " + _options.connectTimeout;
     const _content = _url + "\n" + _options_str;
 
-    $("#" + "text_broker_config").val(_content);
+    this.update_broker_text(_content)
 }
 
 UI.prototype.unset_broker_info_text = function () {
-    $("#" + "text_broker_config").val("");
+    this.update_broker_text("");
+}
+
+UI.prototype.update_broker_text = function (txt_) {
+    $("#" + "text_broker").val(txt_);
+}
+
+UI.prototype.set_broker_badge_connected = function () {
+    const _id = "badge_broker";
+    $("#" + _id).text("Connected");
+    $("#" + _id).attr("class", "badge badge-light bg-success");
+}
+
+UI.prototype.set_broker_badge_disconnected = function () {
+    const _id = "badge_broker";
+    $("#" + _id).text("Disconnected");
+    $("#" + _id).attr("class", "badge badge-light bg-danger");
+}
+
+UI.prototype.set_broker_badge_reconnecting = function () {
+    const _id = "badge_broker";
+    $("#" + _id).text("Reconnecting");
+    $("#" + _id).attr("class", "badge badge-light bg-warning");
+}
+
+UI.prototype.set_broker_badge_idle = function () {
+    const _id = "badge_broker";
+    $("#" + _id).text("Status");
+    $("#" + _id).attr("class", "badge badge-light bg-secondary");
 }
 
 // single elements
