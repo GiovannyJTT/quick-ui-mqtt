@@ -181,12 +181,12 @@ UI_Config.prototype.check_broker_fields = function (broker_) {
 
 UI_Config.prototype.check_format = function () {
     if (undefined == this.data) {
-        console.error("check_format: 'ui' is undefined");
+        console.error("check_format: 'data' is undefined");
         return false;
     }
 
     if (undefined === this.data.mqtt_broker) {
-        console.error("check_format: 'ui' doesn't have 'mqtt_broker' field");
+        console.error("check_format: 'data' doesn't have 'mqtt_broker' field");
         return false;
     }
 
@@ -195,7 +195,7 @@ UI_Config.prototype.check_format = function () {
     }
 
     if (undefined === this.data.items) {
-        console.error("check_format: 'ui' doesn't have 'items' array");
+        console.error("check_format: 'data' doesn't have 'items' array");
         return false;
     }
 
