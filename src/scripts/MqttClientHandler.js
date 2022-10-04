@@ -40,7 +40,7 @@ class MqttClientHandler {
         return;
     }
 
-    const _broker = this.cfg.ui.mqtt_broker;
+    const _broker = this.cfg.data.mqtt_broker;
     const _url = "mqtt://" + _broker.host + ":" + _broker.port;
     this.client = mqtt.connect(_url, _broker.options);
 
