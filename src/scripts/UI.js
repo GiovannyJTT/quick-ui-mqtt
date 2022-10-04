@@ -1,10 +1,10 @@
 import MqttClientHandler from "./MqttClientHandler";
 
-/**
- * Constains all necessary methods for dyanmic creation of UI items (tabs, buttons, text-area, etc)
- * Uses bootstrap (hence ajax and jquery)
- */
 class UI {
+    /**
+     * Constains all necessary methods for dyanmic creation of UI items (tabs, buttons, text-area, etc)
+     * Uses bootstrap (hence ajax and jquery)
+     */
     constructor() {
     }
 }
@@ -42,6 +42,12 @@ UI.prototype.add_tablist_group = function (parent_id_) {
     return _id;
 }
 
+/**
+ * 1. Creates `tab_broker` with 2 children: `column 1` and `column 2`
+ * 2. Attaches `button_broker` to `col 1` and `text_broker` to `col 2`
+ * 3. `text_broker` will reflect broker status (loaded, wrong format) or broker info when connected (host, port, etc)
+ * @param {String} parent_id_ 
+ */
 UI.prototype.add_broker_tab = function (parent_id_) {
     const _sufix = "_broker";
 
@@ -91,7 +97,10 @@ UI.prototype.disable_broker_button = function (disable_) {
 // compound elements (tabs)
 
 /**
+ * Triggers all methods needed to create the list of tabs (buttons and text) for each topic
+ * 
  * Assummes `this.cfg` is already filled and format is correct
+ * 
  * 1. Removes previous tabs (if existing)
  * 2. Adds new tabs and filles the new items
  * 3. Attaches buttons callbacks
