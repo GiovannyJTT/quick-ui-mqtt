@@ -89,7 +89,7 @@ UI_Config.prototype.get_json_from_url = function () {
             }
             else {
                 // to be shown in UI
-                this.on_failed("Wrong format" + this.file_or_url);
+                this.on_failed("Wrong format: " + this.file_or_url);
             }
         }
     );
