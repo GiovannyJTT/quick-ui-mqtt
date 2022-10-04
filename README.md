@@ -1,5 +1,7 @@
 # quick-ui-mqtt
 
+Quick UI generator for MQTT Client
+
 * App is running at: [github-pages-quick-ui-mqtt](https://giovannyjtt.github.io/quick-ui-mqtt/)
 * [Video demo link](https://www.youtube.com/watch?v=gMjwMOx3K3g)
 
