@@ -334,6 +334,11 @@ UI.prototype.set_broker_badge_idle = function () {
     $("#" + _id).attr("class", "badge badge-light bg-secondary");
 }
 
+UI.prototype.update_item_text = function (item_, txt_) {
+    const _id = "text" + item_.index;
+    $("#" + _id).val(txt_);
+}
+
 // single elements
 
 UI.prototype.add_tab = function (parent_id_, sufix_) {
@@ -397,15 +402,6 @@ UI.prototype.add_textarea = function (parent_id_, sufix_, topic_) {
 
     console.debug("added '" + _id + "' to '" + parent_id_ + "'");
     return _id;
-}
-
-UI.prototype.update_item_text = function (item_, txt_) {
-    const _id = "text" + item_.index;
-    $("#" + _id).val(txt_);
-}
-
-UI.prototype.update_broker_text = function (txt_) {
-    $("#" + "text_broker_config").val(txt_);
 }
 
 export default UI;
