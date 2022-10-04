@@ -30,7 +30,7 @@ The main purpose of this project is to provide a simple boilerplate for an `html
 
 [App.js](./src/scripts/App.js)
 
-* This class creates instance of `MqttClientHandler` and `UI` and performs cross-instance operations between then
+* This class creates instance of `MqttClientHandler` and `UI` and performs cross-instance operations between them
 * Attaches callbacks for `broker_button` and `input_form`, which are the basic 2 UI elements needed to load / change the configuration at `runtime`
 * Attaches callbacks to manage mqtt and UI related when:
     * `on_connected`, `on_disconnected`, `on_reconnecting`, on `on_message_received`, etc
