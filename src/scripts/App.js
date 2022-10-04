@@ -28,8 +28,9 @@ class App {
         this.ui = new UI();
         this.ui.add_input_form("container");
         this.ui.add_input_form_cb(this.on_changed_input_file.bind(this));
-
+        
         this.ui.add_tablist_group("container");
+        
         this.ui.add_broker_tab("list_tab");
         this.ui.add_broker_button_cb(this.on_clicked_broker_button.bind(this));
     }
@@ -101,7 +102,6 @@ App.prototype.on_clicked_broker_button = function () {
  */
 App.prototype.disconnect_and_disable = function () {
     this.mqtt_h.disconnect_from_mqtt_broker();
-
     this.ui.disable_all_buttons_of_topics(this.cfg.data);
     this.ui.unset_broker_info_text();
 }
@@ -110,35 +110,39 @@ App.prototype.disconnect_and_disable = function () {
  * Changes badge-status to `Connected`, button-broker to `Disconnect` and enables all buttons of topics
  */
 App.prototype.on_connected = function () {
-    const _id_badge = "badge_broker";
-    $("#" + _id_badge).text("Connected");
-    $("#" + _id_badge).attr("class", "badge badge-light bg-success");
-
+    this.ui.set_broker_badge_connected();
     this.ui.set_broker_info_text(this.cfg.data);
     this.ui.enable_all_buttons_of_topics(this.cfg.data);
 }
 
+/**
+ * Do this just after mqtt client got `connected`
+ */
 App.prototype.on_disconnected = function () {
-    const _id_badge = "badge_broker";
-    $("#" + _id_badge).text("Disconnected");
-    $("#" + _id_badge).attr("class", "badge badge-light bg-danger");
+    this.ui.set_broker_badge_disconnected();
 }
 
-App.prototype.on_error = function (e) {
-    const _id_text = "text_broker_status";
-    $("#" + _id_text).val("error: " + JSON.stringify(e));
+/**
+ * Do this just after mqtt client got `error` in the communication
+ */
+ App.prototype.on_error = function (e) {
+    const _str = "Error: " + JSON.stringify(e);
+    this.ui.update_broker_text(_str)
 }
 
+/**
+ * Do this just after mqtt client got `reconnecting` (because it lost connection with broker)
+ */
 App.prototype.on_reconnecting = function () {
-    const _id_badge = "badge_broker";
-    $("#" + _id_badge).text("Reconnecting");
-    $("#" + _id_badge).attr("class", "badge badge-light bg-warning");
+
+    this.ui.set_broker_badge_reconnecting();
 
     if (undefined === this.reconnect_timed) {
+
         this.reconnect_timed = setTimeout(() => {
+            
             if (!this.mqtt_h.is_connected()) {
-                $("#" + _id_badge).text("Status");
-                $("#" + _id_badge).attr("class", "badge badge-light bg-secondary");
+                this.ui.set_broker_badge_idle();
             }
 
             this.reconnect_timed = undefined;
@@ -148,6 +152,8 @@ App.prototype.on_reconnecting = function () {
 }
 
 /**
+ * Do this just after mqtt client got a received `message`
+ * 
  * Show received message into the corresponding item text-box
  */
 App.prototype.on_message_received = function (topic_, message_, packet_) {
