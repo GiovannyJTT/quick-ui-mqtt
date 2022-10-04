@@ -1,21 +1,29 @@
 
-/**
- * Wraps all methods needed to get the configuration (broker and ui) from file. Commonly: `ui_setup.json`
- * 
- * It will be loaded either from url, server-side file or client-side file
- */
 class Config {
+    /**
+     * Wraps all methods needed to get the configuration (broker and ui) from file. Commonly: `ui_setup.json`
+     * 
+     * It will be loaded either from url, server-side file or client-side file
+     * 
+     * @param {Object} file_or_url_ it is either a `string` of the `URL` or a `File` object (when user selected)
+     *      `URL` can be external (`http:://`) or server-side internal (`./scr/file.json`)
+     * @param {Dictionary} callbacks_ dictionary containing the references to callbacks to be triggered depending on events
+     *      `on_done`
+     */
     constructor (file_or_url_, callbacks_) {
         this.file_or_url = file_or_url_;
         if (undefined === this.file_or_url)  {
-            console.error("Config: 'file_url' is undefined. Not constructed")
+            console.error("Config: 'file_or_url' is undefined. Not constructed");
             return;
         }
 
+        this.cbs = callbacks_;
+        if (undefined === this.cbs) {
+            console.error("Config: `callbacks` is undefined. Not constructed");
+            return;
+        }
+        
         this.data = undefined;
-        this.on_done = callbacks_["on_done"];
-        this.on_failed = callbacks_["on_failed"];
-
         this.get_config();
     }
 }
@@ -60,9 +68,8 @@ Config.prototype.is_string = function (object_) {
 }
 
 /**
- * Fetches `json text content` from `this.file_or_url` and attaches callback for `fail`, `done`
- * 
- * Creates `this.data` object
+ * 1. Fetches `json text content` from `this.file_or_url` and attaches callback for `fail`, `done`
+ * 2. Fills `this.data` object
  */
 Config.prototype.get_json_from_url = function () {
 
@@ -74,39 +81,39 @@ Config.prototype.get_json_from_url = function () {
     );
 
     _res.fail(
-        () => {
+        function (e)  {
             const _str = "Load failed: " + this.file_or_url;
             console.error(_str);
 
             // to be shown in UI
-            this.on_failed(_str);
-        }
+            this.cbs.on_failed(_str);
+        }.bind(this)
     );
 
     _res.done(
-        () => {            
+        function (e) {
             if (this.check_format()) {
                 const _str = "Load done:" + this.file_or_url;
                 console.debug(_str);
 
                 // to be shown in UI
-                this.on_done(_str);
+                this.cbs.on_done(_str);
             }
             else {
                 const _str = "Wrong format: " + this.file_or_url;
                 console.debug(_str);
 
                 // to be shown in UI
-                this.on_failed(_str);
+                this.cbs.on_failed(_str);
             }
-        }
+        }.bind(this)
     );
 }
 
 /**
  * 1. It assumes `this.file_or_url` is of type `File`
  * 2. Reads client-side file
- * 3. Creates `this.data` object
+ * 3. Fills `this.data` object
  */
 Config.prototype.get_json_from_local = function () {
     
@@ -124,14 +131,14 @@ Config.prototype.get_json_from_local = function () {
             console.debug(_str);
 
             // to be shown on UI
-            this.on_done(_str);
+            this.cbs.on_done(_str);
         }
         else {
             const _str = "Wrong format: " + this.file_or_url.name;
             console.debug(_str);
 
             // to be shown on UI
-            this.on_failed();
+            this.cbs.on_failed(_str);
         }
     }.bind(this);
 
@@ -141,7 +148,7 @@ Config.prototype.get_json_from_local = function () {
             console.debug(_str);
 
             // to be shown on UI
-            this.on_failed(_str);
+            this.cbs.on_failed(_str);
         }.bind(this)
     );
 
