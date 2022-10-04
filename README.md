@@ -1,7 +1,7 @@
 # quick-ui-mqtt
 
 * App is running at: [github-pages-quick-ui-mqtt](https://giovannyjtt.github.io/quick-ui-mqtt/)
-* [Video demo link](https://studio.youtube.com/video/gMjwMOx3K3g/edit)
+* [Video demo link](https://www.youtube.com/watch?v=gMjwMOx3K3g)
 
 ![quick_ui_mqtt_gif](./docs/quick_ui_mqtt_gif.gif)
 
