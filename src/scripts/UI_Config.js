@@ -1,14 +1,14 @@
 
 /**
- * Wraps all methods needed to get the ui_setup in a json structure
+ * Wraps all methods needed to get the configuration (broker and ui) from file. Commonly: `ui_setup.json`
  * 
  * It will be loaded either from url, server-side file or client-side file
  */
-class UI_Config {
+class Config {
     constructor (file_or_url_, callbacks_) {
         this.file_or_url = file_or_url_;
         if (undefined === this.file_or_url)  {
-            console.error("UI_Config: 'file_url' is undefined. Not constructed")
+            console.error("Config: 'file_url' is undefined. Not constructed")
             return;
         }
 
@@ -20,7 +20,7 @@ class UI_Config {
     }
 }
 
-UI_Config.prototype.is_file = function (object_) {
+Config.prototype.is_file = function (object_) {
     if (this.is_string(object_)) {
         // is url
         return false;
@@ -31,7 +31,7 @@ UI_Config.prototype.is_file = function (object_) {
     }
 }
 
-UI_Config.prototype.is_string = function (object_) {
+Config.prototype.is_string = function (object_) {
     return (typeof object_ == "string");
 }
 
@@ -40,22 +40,22 @@ UI_Config.prototype.is_string = function (object_) {
  * 
  * `URL` (can be on server-side or on client-local-side)
  */
- UI_Config.prototype.get_config = function () {
+ Config.prototype.get_config = function () {
     if (this.is_file(this.file_or_url)) {
-        console.debug("UI_Config: loading client-side json-file: " + this.file_or_url.name);
+        console.debug("Config: loading client-side json-file: " + this.file_or_url.name);
         this.get_json_from_local();
     }
     else if (this.is_string(this.file_or_url)) {
         if (this.file_or_url.startsWith("http:/")) {
-            console.debug("UI_Config: loading external json-file: " + this.file_or_url);
+            console.debug("Config: loading external json-file: " + this.file_or_url);
         }
         else {
-            console.debug("UI_Config: loading server-side json-file: " + this.file_or_url);
+            console.debug("Config: loading server-side json-file: " + this.file_or_url);
         }
         this.get_json_from_url();
     }
     else {
-        console.error("UI_Config: unhandled type of: " + this.file_or_url);
+        console.error("Config: unhandled type of: " + this.file_or_url);
     }
 }
 
@@ -64,7 +64,7 @@ UI_Config.prototype.is_string = function (object_) {
  * 
  * Creates `this.data` object
  */
-UI_Config.prototype.get_json_from_url = function () {
+Config.prototype.get_json_from_url = function () {
 
     const _res = $.getJSON(this.file_or_url,
         function (data) {
@@ -108,7 +108,7 @@ UI_Config.prototype.get_json_from_url = function () {
  * 2. Reads client-side file
  * 3. Creates `this.data` object
  */
-UI_Config.prototype.get_json_from_local = function () {
+Config.prototype.get_json_from_local = function () {
     
     const _f = this.file_or_url;
     const _fr = new FileReader();
@@ -161,7 +161,7 @@ UI_Config.prototype.get_json_from_local = function () {
     _fr.readAsText(_f, "utf-8");
 }
 
-UI_Config.prototype.check_item_fields = function (item_, i) {
+Config.prototype.check_item_fields = function (item_, i) {
     if (undefined === item_.topic) {
         console.error("check_item_fields: item " + i + " has no 'topic': " + JSON.stringify(item_) + ". Aborting");
         return false;
@@ -180,7 +180,7 @@ UI_Config.prototype.check_item_fields = function (item_, i) {
     return true;
 }
 
-UI_Config.prototype.check_broker_fields = function (broker_) {
+Config.prototype.check_broker_fields = function (broker_) {
     if (undefined === broker_.host) {
         console.error("check_broker_fields: broker has no 'host' field");
         return false;
@@ -197,7 +197,7 @@ UI_Config.prototype.check_broker_fields = function (broker_) {
     return true;
 }
 
-UI_Config.prototype.check_format = function () {
+Config.prototype.check_format = function () {
     if (undefined == this.data) {
         console.error("check_format: 'data' is undefined");
         return false;
@@ -227,7 +227,7 @@ UI_Config.prototype.check_format = function () {
     return true;
 }
 
-UI_Config.prototype.get_item_from_topic = function (topic_) {
+Config.prototype.get_item_from_topic = function (topic_) {
     
     let _item = undefined;
     const _items = this.data.items;
@@ -243,4 +243,4 @@ UI_Config.prototype.get_item_from_topic = function (topic_) {
     return _item;
 }
 
-export default UI_Config;
+export default Config;
