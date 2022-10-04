@@ -70,11 +70,11 @@ App.prototype.on_changed_input_file = function (e) {
         console.debug("File selected: " + _file.name);
 
         // create new config
-        const _cbs = {
+        const _cbs_cfg = {
             on_done: this.on_config_done.bind(this),
             on_failed: this.on_config_failed.bind(this)
         }
-        this.cfg = new Config(_file, _cbs);
+        this.cfg = new Config(_file, _cbs_cfg);
 
         this.ui.reset_broker_tab_status();
         this.mqtt_h.disconnect_from_mqtt_broker();
