@@ -65,31 +65,39 @@ UI_Config.prototype.is_string = function (object_) {
  * Creates `this.data` object
  */
 UI_Config.prototype.get_json_from_url = function () {
+
     const _res = $.getJSON(this.file_or_url,
         function (data) {
-            this.ui = data;
+            this.data = data;
+            console.debug(this.data);
         }.bind(this),
     );
 
     _res.fail(
         () => {
-            console.error("Load failed");
+            const _str = "Load failed: " + this.file_or_url;
+            console.error(_str);
+
             // to be shown in UI
-            this.on_failed("Load failed: " + this.file_or_url);
+            this.on_failed(_str);
         }
     );
 
     _res.done(
-        () => {
-            console.debug("Load done");
-
+        () => {            
             if (this.check_format()) {
+                const _str = "Load done:" + this.file_or_url;
+                console.debug(_str);
+
                 // to be shown in UI
-                this.on_done("Load done: " + this.file_or_url);
+                this.on_done(_str);
             }
             else {
+                const _str = "Wrong format: " + this.file_or_url;
+                console.debug(_str);
+
                 // to be shown in UI
-                this.on_failed("Wrong format: " + this.file_or_url);
+                this.on_failed(_str);
             }
         }
     );
@@ -98,7 +106,7 @@ UI_Config.prototype.get_json_from_url = function () {
 /**
  * 1. It assumes `this.file_or_url` is of type `File`
  * 2. Reads client-side file
- * 3. Creates `this.ui` object
+ * 3. Creates `this.data` object
  */
 UI_Config.prototype.get_json_from_local = function () {
     
@@ -112,19 +120,28 @@ UI_Config.prototype.get_json_from_local = function () {
         console.debug(this.data);
 
         if (this.check_format()) {
+            const _str = "Load done: " + this.file_or_url.name;
+            console.debug(_str);
+
             // to be shown on UI
-            this.on_done("Load done: " + this.file_or_url.name);
+            this.on_done(_str);
         }
         else {
+            const _str = "Wrong format: " + this.file_or_url.name;
+            console.debug(_str);
+
             // to be shown on UI
-            this.on_failed("Wrong format: " + this.file_or_url.name);
+            this.on_failed();
         }
     }.bind(this);
 
     _fr.addEventListener("error",
         function (e) {
-            console.debug("Load error: " + JSON.stringify(e));
-            this.on_failed("Load error: " + JSON.stringify(e));
+            const _str = "Load error: " + JSON.stringify(e);
+            console.debug(_str);
+
+            // to be shown on UI
+            this.on_failed(_str);
         }.bind(this)
     );
 
@@ -140,6 +157,7 @@ UI_Config.prototype.get_json_from_local = function () {
         }.bind(this)
     );
 
+    // trigger start reading
     _fr.readAsText(_f, "utf-8");
 }
 
