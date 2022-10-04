@@ -2,10 +2,14 @@ import Config from './Config';
 import MqttClientHandler from './MqttClientHandler';
 import UI from './UI';
 
-/**
- * Wraps all needed to create our UI from the `ui_setup.json` and adds publish / subscribe into the callbacks
- */
 class App {
+    /**
+     * This class creates instance of `MqttClientHandler` and `UI` and performs cross-instance operations between them
+     * 
+     * Passes the callbacks to be run `on_config_done`, `on_config_failed`
+     * 
+     * Adds to UI: `input-form` and `broker-tab` (`button` and `text-area`)
+     */
     constructor() {
         // initial config (can be replaced when loaded file at input-form)
         const _cbs_cfg = {
