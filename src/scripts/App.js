@@ -1,4 +1,4 @@
-import UI_Config from './UI_Config';
+import Config from './Config';
 import MqttClientHandler from './MqttClientHandler';
 import UI from './UI';
 
@@ -9,10 +9,10 @@ class App {
     constructor() {
         // initial config (can be replaced when loaded file at input-form)
         const _cbs_cfg = {
-            on_done: this.on_ui_config_done.bind(this),
-            on_failed: this.on_ui_config_failed.bind(this)
+            on_done: this.on_config_done.bind(this),
+            on_failed: this.on_config_failed.bind(this)
         };
-        this.cfg = new UI_Config("./assets/ui_setup.json", _cbs_cfg);
+        this.cfg = new Config("./assets/ui_setup.json", _cbs_cfg);
 
         // mqtt
         const _cbs_mqtt = {
@@ -35,12 +35,12 @@ class App {
     }
 }
 
-App.prototype.on_ui_config_done = function (e) {
+App.prototype.on_config_done = function (e) {
     this.ui.update_broker_text(e);
     this.ui.setup_ui(this.cfg.data, this.mqtt_h);
 }
 
-App.prototype.on_ui_config_failed = function (error_) {
+App.prototype.on_config_failed = function (error_) {
     this.ui.update_broker_text(error_);
 }
 
@@ -66,10 +66,10 @@ App.prototype.on_changed_input_file = function (e) {
 
         // create new config
         const _cbs = {
-            on_done: this.on_ui_config_done.bind(this),
-            on_failed: this.on_ui_config_failed.bind(this)
+            on_done: this.on_config_done.bind(this),
+            on_failed: this.on_config_failed.bind(this)
         }
-        this.cfg = new UI_Config(_file, _cbs);
+        this.cfg = new Config(_file, _cbs);
 
         this.ui.reset_broker_tab_status();
         this.mqtt_h.disconnect_from_mqtt_broker();
