@@ -44,9 +44,7 @@ Config.prototype.is_string = function (object_) {
 }
 
 /**
- * Checks if it is a `File` or an `URL` (string)
- * 
- * `URL` (can be on server-side or on client-local-side)
+ * Depending on the typo of `this.file_or_url` it will trigger the loading of the file content
  */
  Config.prototype.get_config = function () {
     if (this.is_file(this.file_or_url)) {
@@ -68,7 +66,7 @@ Config.prototype.is_string = function (object_) {
 }
 
 /**
- * 1. Fetches `json text content` from `this.file_or_url` and attaches callback for `fail`, `done`
+ * 1. Fetches `json text content` from `this.file_or_url` (as URL string) and attaches callback for `fail`, `done`
  * 2. Fills `this.data` object
  */
 Config.prototype.get_json_from_url = function () {
@@ -111,7 +109,7 @@ Config.prototype.get_json_from_url = function () {
 }
 
 /**
- * 1. It assumes `this.file_or_url` is of type `File`
+ * 1. It assumes `this.file_or_url` is of type `File` (already selected by the user via input-form)
  * 2. Reads client-side file
  * 3. Fills `this.data` object
  */

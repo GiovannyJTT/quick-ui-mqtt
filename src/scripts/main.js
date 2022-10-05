@@ -1,10 +1,10 @@
 /**
- * Load bootstrap js
+ * Load bootstrapjs
  */
 import 'bootstrap'
 
 /**
- * Load predefined css colors and styles
+ * Load bootstrapjs predefined css colors and styles
  */
 import 'bootstrap/dist/css/bootstrap.min.css'
 

@@ -28,7 +28,8 @@ class MqttClientHandler {
 }
 
 /**
- * Creates mqtt-client, connects to broker and attaches callbaks for mqtt-client-events (connected, disconnected, onmessage)
+ * Creates mqtt-client, connects to broker and attaches callbaks for mqtt-client-events
+ *      (on_connected, on_disconnected, on_message, on_error, on_reconnecting)
  * 
  * NOTE: mqtt port for websockets: commonly 9001
  * 

@@ -120,7 +120,7 @@ App.prototype.on_connected = function () {
 }
 
 /**
- * Do this just after mqtt client got `connected`
+ * Do this just after mqtt client got `disconnected`
  */
 App.prototype.on_disconnected = function () {
     this.ui.set_broker_badge_disconnected();
